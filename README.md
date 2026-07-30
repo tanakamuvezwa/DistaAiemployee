@@ -1,4 +1,4 @@
-# DistaMate — AI Workspace Assistant
+# DistaAiEmployee — AI Workspace Assistant
 
 > An intelligent, personal AI assistant for Gmail, Google Drive, Docs & Sheets — powered by OpenRouter AI.
 
