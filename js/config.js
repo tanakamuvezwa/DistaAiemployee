@@ -10,7 +10,7 @@ const Config = {
   AI_MODEL: 'gemini-2.0-flash',
 
   // Google OAuth2 (Set via Settings panel or localStorage)
-  GOOGLE_CLIENT_ID: '',
+  GOOGLE_CLIENT_ID: '327420491230-g63opo9hup5sofegimdchaoibldjaack.apps.googleusercontent.com',
 
   // Google API Scopes
   GOOGLE_SCOPES: [
