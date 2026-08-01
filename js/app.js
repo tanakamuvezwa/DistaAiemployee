@@ -14,6 +14,7 @@ import { renderSheetsPanel } from './components/sheets-panel.js';
 import { renderSettingsPanel } from './components/settings-panel.js';
 import { initChat } from './components/chat.js';
 import Voice from './voice.js';
+import FX from './fx.js';
 
 // ── State ────────────────────────────────────────────────────────
 let _currentPanel = 'dashboard';
@@ -110,6 +111,22 @@ function onAuthSuccess(userProfile) {
       btn.style.cursor = 'not-allowed';
     }
   }
+
+  // Init FX (particle canvas + 3D card tilt)
+  FX.init();
+
+  // Wire mobile bottom nav
+  document.querySelectorAll('.mbn-item[data-panel]').forEach(item => {
+    item.addEventListener('click', () => {
+      const panel = item.dataset.panel;
+      switchPanel(panel);
+      document.querySelectorAll('.mbn-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+  document.getElementById('mobile-voice-btn')?.addEventListener('click', () => {
+    document.getElementById('voice-btn')?.click();
+  });
 
   // Load dashboard
   switchPanel('dashboard');
