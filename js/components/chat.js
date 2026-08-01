@@ -39,7 +39,19 @@ export function initChat(userProfile) {
     _workspaceContext = `User: ${userProfile.name} (${userProfile.email})`;
   }
 
-  window.chat = { sendSuggestion };
+  // Export for external access
+window.chat = {
+  sendSuggestion,
+  appendVoiceMessage(text) {
+    // Show voice-triggered user message in chat panel
+    const panel = document.getElementById('chat-panel');
+    panel?.classList.remove('hidden');
+    appendMessage('user', `🎙️ ${text}`);
+  },
+  appendVoiceReply(text) {
+    appendMessage('ai', text);
+  },
+};
 }
 
 function sendSuggestion(text) {

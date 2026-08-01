@@ -13,6 +13,7 @@ import { renderDocsPanel } from './components/doc-panel.js';
 import { renderSheetsPanel } from './components/sheets-panel.js';
 import { renderSettingsPanel } from './components/settings-panel.js';
 import { initChat } from './components/chat.js';
+import Voice from './voice.js';
 
 // ── State ────────────────────────────────────────────────────────
 let _currentPanel = 'dashboard';
@@ -90,6 +91,26 @@ function onAuthSuccess(userProfile) {
   // Init chat
   initChat(userProfile);
 
+  // Init voice (Jarvis mode)
+  if (Voice.isSupported()) {
+    Voice.init(async (spokenText) => {
+      // Append user message visually to chat
+      window.chat?.appendVoiceMessage?.(spokenText);
+      // Get AI reply via streaming chat
+      const reply = await getVoiceAIReply(spokenText);
+      // Also append AI reply to chat panel
+      window.chat?.appendVoiceReply?.(reply);
+      return reply;
+    });
+  } else {
+    const btn = document.getElementById('voice-btn');
+    if (btn) {
+      btn.title = 'Voice not supported in this browser (use Chrome/Edge)';
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+    }
+  }
+
   // Load dashboard
   switchPanel('dashboard');
 
@@ -158,7 +179,25 @@ function updateUserInfo(profile) {
   }
 }
 
-// ── Expose switchPanel for components ────────────────────────────
+// ── Voice AI Reply ────────────────────────────────────────────
+async function getVoiceAIReply(spokenText) {
+  const { default: AI } = await import('./ai.js');
+  let fullReply = '';
+  try {
+    const stream = AI.chatStream(
+      [{ role: 'user', content: spokenText }],
+      'You are DistaAiEmployee, a voice-activated AI assistant. Keep replies concise and conversational — ideal for being read aloud. Avoid markdown, bullet points, or code blocks in your response.'
+    );
+    for await (const chunk of stream) {
+      fullReply += chunk;
+    }
+  } catch (e) {
+    fullReply = 'Sorry, I encountered an error: ' + e.message;
+  }
+  return fullReply;
+}
+
+// ── Expose switchPanel for voice and components ───────────────
 window._app = { switchPanel };
 
 // ── Start ─────────────────────────────────────────────────────────

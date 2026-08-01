@@ -251,6 +251,15 @@
           <button class="topbar-btn" id="refresh-btn" title="Refresh data">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
+          <button class="topbar-btn voice-btn" id="voice-btn" title="Voice Command (Space)" data-state="idle">
+            <svg id="voice-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span class="voice-btn-ring"></span>
+          </button>
           <button class="topbar-btn chat-toggle-btn" id="chat-toggle-btn" title="Toggle AI Chat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span class="chat-badge">AI</span>
@@ -330,6 +339,48 @@
 
   <!-- TOAST -->
   <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- JARVIS VOICE OVERLAY -->
+  <div id="voice-overlay" class="voice-overlay hidden" role="dialog" aria-label="Voice command active">
+    <div class="voice-orb-container">
+
+      <!-- Orb rings -->
+      <div id="voice-orb" class="voice-orb" data-state="idle">
+        <div class="orb-ring orb-ring-1"></div>
+        <div class="orb-ring orb-ring-2"></div>
+        <div class="orb-ring orb-ring-3"></div>
+        <div class="orb-core">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- State label -->
+      <div id="voice-orb-state" class="voice-orb-state">Listening...</div>
+
+      <!-- Waveform bars -->
+      <div class="voice-waveform">
+        <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        <div class="voice-bar"></div>
+      </div>
+
+      <!-- Live transcript -->
+      <div id="voice-transcript" class="voice-transcript" data-final=""></div>
+
+      <!-- Hint -->
+      <div class="voice-hint">Hold <kbd>Space</kbd> or click the mic to speak</div>
+
+      <!-- Cancel -->
+      <button id="voice-cancel-btn" class="voice-cancel-btn">✕ Cancel</button>
+
+    </div>
+  </div>
 
   <!-- APP -->
   <script type="module" src="js/app.js"></script>
