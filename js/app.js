@@ -15,6 +15,7 @@ import { renderSettingsPanel } from './components/settings-panel.js';
 import { initChat } from './components/chat.js';
 import Voice from './voice.js';
 import FX from './fx.js';
+import DistaMode from './dista-mode.js';
 
 // ── State ────────────────────────────────────────────────────────
 let _currentPanel = 'dashboard';
@@ -95,6 +96,10 @@ function onAuthSuccess(userProfile) {
   // Init voice (Jarvis mode)
   if (Voice.isSupported()) {
     Voice.init(async (spokenText) => {
+      if (DistaMode.isOpen) {
+        await DistaMode.handleVoiceInput(spokenText);
+        return ''; // DistaMode handles speaking
+      }
       // Append user message visually to chat
       window.chat?.appendVoiceMessage?.(spokenText);
       // Get AI reply via streaming chat
@@ -114,6 +119,9 @@ function onAuthSuccess(userProfile) {
 
   // Init FX (particle canvas + 3D card tilt)
   FX.init();
+
+  // Init DISTA MODE (JARVIS full-screen interface)
+  DistaMode.init();
 
   // Wire mobile bottom nav
   document.querySelectorAll('.mbn-item[data-panel]').forEach(item => {
