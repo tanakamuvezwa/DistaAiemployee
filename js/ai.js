@@ -93,8 +93,6 @@ const AI = {
       headers: {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'DistaAiEmployee',
       },
       body: JSON.stringify(body),
     });

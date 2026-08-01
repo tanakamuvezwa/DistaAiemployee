@@ -42,8 +42,8 @@ export function renderSettingsPanel(container) {
             <label class="form-label">Gemini API Key</label>
             <div class="form-input-group">
               <input class="form-input" id="ai-key-input" type="password"
-                value="${Config.GEMINI_API_KEY || ''}"
-                placeholder="AIzaSy..." />
+                value="${Config.OPENROUTER_API_KEY || Config.GEMINI_API_KEY || ''}"
+                placeholder="sk-or-... or AIzaSy..." />
               <button class="btn btn-icon btn-secondary" id="toggle-ai-key" title="Show/hide key">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
@@ -185,8 +185,18 @@ export function renderSettingsPanel(container) {
     document.getElementById('ai-status-text').textContent = 'AI Key Configured & Active';
   });
 
-  // Test AI
+  // Test AI (auto-saves typed key first)
   document.getElementById('test-ai-btn')?.addEventListener('click', async () => {
+    const key = document.getElementById('ai-key-input')?.value?.trim();
+    if (key) {
+      if (key.startsWith('sk-or-')) {
+        Config.OPENROUTER_API_KEY = key;
+      } else {
+        Config.GEMINI_API_KEY = key;
+      }
+      Config.save();
+    }
+
     const btn = document.getElementById('test-ai-btn');
     btn.textContent = '...testing';
     btn.disabled = true;
@@ -196,6 +206,8 @@ export function renderSettingsPanel(container) {
         'You are a test bot. Reply exactly as instructed.'
       );
       toast.success('✅ AI Test: ' + result.substring(0, 60));
+      document.getElementById('ai-status-dot').className = 'status-dot connected';
+      document.getElementById('ai-status-text').textContent = 'AI Key Connected & Verified';
     } catch (e) {
       toast.error('AI Test failed: ' + e.message);
     } finally {
