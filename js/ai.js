@@ -76,7 +76,7 @@ const AI = {
   // ── OpenRouter API ───────────────────────────────────────────
   async _callOpenRouter(messages, systemPrompt, key) {
     const url = `${Config.OPENROUTER_BASE_URL}/chat/completions`;
-    const model = 'google/gemini-2.0-flash-001';
+    const model = 'openrouter/auto';
 
     const body = {
       model,
@@ -183,7 +183,7 @@ const AI = {
   async *_streamOpenRouter(messages, systemPrompt, key) {
     const url = `${Config.OPENROUTER_BASE_URL}/chat/completions`;
     const body = {
-      model: 'google/gemini-2.0-flash-001',
+      model: 'openrouter/auto',
       messages: [
         ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
         ...messages,
