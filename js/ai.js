@@ -1,6 +1,6 @@
 /**
- * DistaMate — Google Gemini AI Module
- * Uses Gemini 2.0 Flash via the Generative Language REST API.
+ * DistaMate — Unified AI Module (Google Gemini + OpenRouter Dual Support)
+ * Intelligently routes requests to Gemini REST API or OpenRouter API.
  */
 
 import Config from './config.js';
@@ -9,13 +9,36 @@ const AI = {
 
   // ── Core: single-shot generation ─────────────────────────────
   async _call(messages, systemPrompt) {
-    const key = Config.GEMINI_API_KEY;
-    if (!key) throw new Error('No Gemini API key configured. Please add it in Settings.');
+    const geminiKey     = Config.GEMINI_API_KEY;
+    const openrouterKey = Config.OPENROUTER_API_KEY;
 
+    if (!geminiKey && !openrouterKey) {
+      throw new Error('No AI key configured. Please add a Gemini or OpenRouter key in Settings.');
+    }
+
+    // Determine primary provider
+    if (openrouterKey && (!geminiKey || openrouterKey.startsWith('sk-or-'))) {
+      try {
+        return await this._callOpenRouter(messages, systemPrompt, openrouterKey);
+      } catch (err) {
+        if (geminiKey) return await this._callGemini(messages, systemPrompt, geminiKey);
+        throw err;
+      }
+    }
+
+    try {
+      return await this._callGemini(messages, systemPrompt, geminiKey);
+    } catch (err) {
+      if (openrouterKey) return await this._callOpenRouter(messages, systemPrompt, openrouterKey);
+      throw err;
+    }
+  },
+
+  // ── Gemini REST API ──────────────────────────────────────────
+  async _callGemini(messages, systemPrompt, key) {
     const model = Config.AI_MODEL || 'gemini-2.0-flash';
-    const url = `${Config.GEMINI_BASE_URL}/models/${model}:generateContent?key=${key}`;
+    const url   = `${Config.GEMINI_BASE_URL}/models/${model}:generateContent?key=${key}`;
 
-    // Convert OpenAI-style messages to Gemini `contents` format
     const contents = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
@@ -24,10 +47,7 @@ const AI = {
     const body = {
       systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
       contents,
-      generationConfig: {
-        temperature: 0.5,
-        maxOutputTokens: 1200,
-      },
+      generationConfig: { temperature: 0.5, maxOutputTokens: 1200 },
       safetySettings: [
         { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
         { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
@@ -44,23 +64,68 @@ const AI = {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      const msg = err.error?.message || `Gemini API error ${res.status}`;
-      throw new Error(msg);
+      throw new Error(err.error?.message || `Gemini API error ${res.status}`);
     }
 
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error('Gemini returned an empty response.');
+    if (!text) throw new Error('Gemini returned empty response.');
+    return text;
+  },
+
+  // ── OpenRouter API ───────────────────────────────────────────
+  async _callOpenRouter(messages, systemPrompt, key) {
+    const url = `${Config.OPENROUTER_BASE_URL}/chat/completions`;
+    const model = 'google/gemini-2.0-flash-001';
+
+    const body = {
+      model,
+      messages: [
+        ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+        ...messages,
+      ],
+      temperature: 0.5,
+      max_tokens: 1200,
+    };
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:3000',
+        'X-Title': 'DistaAiEmployee',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `OpenRouter API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('OpenRouter returned empty response.');
     return text;
   },
 
   // ── Core: streaming generation ────────────────────────────────
   async *_stream(messages, systemPrompt) {
-    const key = Config.GEMINI_API_KEY;
-    if (!key) throw new Error('No Gemini API key configured.');
+    const key = Config.GEMINI_API_KEY || Config.OPENROUTER_API_KEY;
+    if (!key) throw new Error('No AI key configured.');
 
+    if (Config.OPENROUTER_API_KEY && Config.OPENROUTER_API_KEY.startsWith('sk-or-')) {
+      yield* this._streamOpenRouter(messages, systemPrompt, Config.OPENROUTER_API_KEY);
+      return;
+    }
+
+    yield* this._streamGemini(messages, systemPrompt, key);
+  },
+
+  async *_streamGemini(messages, systemPrompt, key) {
     const model = Config.AI_MODEL || 'gemini-2.0-flash';
-    const url = `${Config.GEMINI_BASE_URL}/models/${model}:streamGenerateContent?alt=sse&key=${key}`;
+    const url   = `${Config.GEMINI_BASE_URL}/models/${model}:streamGenerateContent?alt=sse&key=${key}`;
 
     const contents = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -97,7 +162,6 @@ const AI = {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
@@ -109,9 +173,59 @@ const AI = {
         if (jsonStr === '[DONE]') return;
         try {
           const chunk = JSON.parse(jsonStr);
-          const text = chunk.candidates?.[0]?.content?.parts?.[0]?.text;
+          const text  = chunk.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) yield text;
         } catch { /* skip malformed */ }
+      }
+    }
+  },
+
+  async *_streamOpenRouter(messages, systemPrompt, key) {
+    const url = `${Config.OPENROUTER_BASE_URL}/chat/completions`;
+    const body = {
+      model: 'google/gemini-2.0-flash-001',
+      messages: [
+        ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+        ...messages,
+      ],
+      stream: true,
+    };
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `OpenRouter stream error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const jsonStr = trimmed.slice(5).trim();
+        if (jsonStr === '[DONE]') return;
+        try {
+          const chunk = JSON.parse(jsonStr);
+          const text  = chunk.choices?.[0]?.delta?.content;
+          if (text) yield text;
+        } catch { /* skip */ }
       }
     }
   },

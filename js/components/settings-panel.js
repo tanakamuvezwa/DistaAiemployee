@@ -9,7 +9,7 @@ import { toast, escapeHtml } from '../ui.js';
 
 export function renderSettingsPanel(container) {
   const clientIdStatus = Config.GOOGLE_CLIENT_ID ? 'connected' : 'disconnected';
-  const aiKeyStatus = Config.OPENROUTER_API_KEY ? 'connected' : 'disconnected';
+  const aiKeyStatus = (Config.GEMINI_API_KEY || Config.OPENROUTER_API_KEY) ? 'connected' : 'disconnected';
 
   container.innerHTML = `
     <div class="page-header">
@@ -165,17 +165,24 @@ export function renderSettingsPanel(container) {
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
   });
 
-  // Save AI settings
+  // Save AI settings (supports both OpenRouter sk-or-... keys and Gemini keys)
   document.getElementById('save-ai-btn')?.addEventListener('click', () => {
     const key = document.getElementById('ai-key-input')?.value?.trim();
     const model = document.getElementById('ai-model-select')?.value;
     if (!key) { toast.warning('Please enter an API key.'); return; }
-    Config.GEMINI_API_KEY = key;
+
+    if (key.startsWith('sk-or-')) {
+      Config.OPENROUTER_API_KEY = key;
+      toast.success('OpenRouter API key saved!');
+    } else {
+      Config.GEMINI_API_KEY = key;
+      toast.success('Gemini API key saved!');
+    }
     Config.AI_MODEL = model;
     Config.save();
+
     document.getElementById('ai-status-dot').className = 'status-dot connected';
-    document.getElementById('ai-status-text').textContent = 'Gemini key saved';
-    toast.success('Gemini settings saved!');
+    document.getElementById('ai-status-text').textContent = 'AI Key Configured & Active';
   });
 
   // Test AI

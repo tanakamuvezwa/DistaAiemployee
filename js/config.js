@@ -4,12 +4,14 @@
  */
 
 const Config = {
-  // Gemini AI (Set via Settings panel or localStorage)
+  // AI Keys (Loaded from localStorage or runtime input)
   GEMINI_API_KEY: '',
+  OPENROUTER_API_KEY: '',
   GEMINI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
+  OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
   AI_MODEL: 'gemini-2.0-flash',
 
-  // Google OAuth2 (Set via Settings panel or localStorage)
+  // Google OAuth2
   GOOGLE_CLIENT_ID: '327420491230-g63opo9hup5sofegimdchaoibldjaack.apps.googleusercontent.com',
 
   // Google API Scopes
@@ -35,6 +37,7 @@ const Config = {
   STORAGE_KEYS: {
     CLIENT_ID: 'dm_google_client_id',
     GEMINI_KEY: 'dm_gemini_key',
+    OPENROUTER_KEY: 'dm_openrouter_key',
     AI_MODEL: 'dm_ai_model',
     THEME: 'dm_theme',
     CHAT_HISTORY: 'dm_chat_history',
@@ -44,10 +47,12 @@ const Config = {
   load() {
     const savedClientId = localStorage.getItem(this.STORAGE_KEYS.CLIENT_ID);
     if (savedClientId) this.GOOGLE_CLIENT_ID = savedClientId;
-    // If nothing saved, keep the hardcoded default above
 
-    const savedKey = localStorage.getItem(this.STORAGE_KEYS.GEMINI_KEY);
-    if (savedKey) this.GEMINI_API_KEY = savedKey;
+    const savedGemini = localStorage.getItem(this.STORAGE_KEYS.GEMINI_KEY);
+    if (savedGemini) this.GEMINI_API_KEY = savedGemini;
+
+    const savedOpenRouter = localStorage.getItem(this.STORAGE_KEYS.OPENROUTER_KEY);
+    if (savedOpenRouter) this.OPENROUTER_API_KEY = savedOpenRouter;
 
     const savedModel = localStorage.getItem(this.STORAGE_KEYS.AI_MODEL);
     if (savedModel) this.AI_MODEL = savedModel;
@@ -56,6 +61,7 @@ const Config = {
   save() {
     if (this.GOOGLE_CLIENT_ID) localStorage.setItem(this.STORAGE_KEYS.CLIENT_ID, this.GOOGLE_CLIENT_ID);
     if (this.GEMINI_API_KEY) localStorage.setItem(this.STORAGE_KEYS.GEMINI_KEY, this.GEMINI_API_KEY);
+    if (this.OPENROUTER_API_KEY) localStorage.setItem(this.STORAGE_KEYS.OPENROUTER_KEY, this.OPENROUTER_API_KEY);
     if (this.AI_MODEL) localStorage.setItem(this.STORAGE_KEYS.AI_MODEL, this.AI_MODEL);
   }
 };
