@@ -7,6 +7,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 # Import local Python backend tools
 from dista_brain import DistaBrain
 from dista_tools import EmailTool, DocsTool, MessagesTool
+from dista_gmail import gmail_service
+from dista_db import db_engine
 
 brain = DistaBrain()
 
@@ -24,7 +26,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .app-card {
       width: 100%;
       max-width: 440px;
-      height: 860px;
+      height: 870px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
@@ -37,16 +39,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
     .brand span { color: #FF6B00; }
     .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
     .header-btn:hover { border-color: #FF6B00; color: #FFF; }
 
+    /* Badges */
+    .badge-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; }
+    .badge.active { border-color: #FF6B00; color: #FF6B00; }
+
     /* Center Avatar Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-bottom: 12px; }
+    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-bottom: 10px; }
     .avatar-ring {
-      width: 150px; height: 150px; border-radius: 50%;
+      width: 140px; height: 140px; border-radius: 50%;
       border: 2.5px solid #FF6B00;
       box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
       display: flex; align-items: center; justify-content: center;
@@ -56,29 +63,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
 
     .pixel-avatar {
-      width: 100px; height: 100px;
+      width: 96px; height: 96px;
       background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .pixel-eyes { display: flex; gap: 22px; margin-top: -8px; }
-    .pixel-eye { width: 13px; height: 13px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
+    .pixel-eyes { display: flex; gap: 20px; margin-top: -8px; }
+    .pixel-eye { width: 12px; height: 12px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
     .pixel-eye.listening { background: #00E5FF; box-shadow: 0 0 10px #00E5FF; }
-    .pixel-mouth { width: 22px; height: 4px; background: #282C3A; margin-top: 14px; border-radius: 2px; }
+    .pixel-mouth { width: 20px; height: 4px; background: #282C3A; margin-top: 12px; border-radius: 2px; }
     .pixel-mouth.speaking { background: #FF6B00; height: 8px; animation: mouthTalk 0.2s infinite alternate; }
 
     @keyframes mouthTalk { from { height: 3px; } to { height: 10px; } }
 
-    .greeting { font-size: 13px; font-weight: 600; color: #E2E8F0; max-width: 320px; line-height: 1.4; min-height: 38px; }
+    .greeting { font-size: 13px; font-weight: 600; color: #E2E8F0; max-width: 330px; line-height: 1.4; min-height: 38px; }
 
     /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 32px; }
+    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 30px; }
     .wave-bar { width: 4px; height: 10px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
     .wave-bar.white { background: #FFFFFF; }
 
     /* Action Shortcut Bar */
-    .quick-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
+    .quick-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none; }
     .quick-actions::-webkit-scrollbar { display: none; }
     .action-chip {
       background: #1A1C28; border: 1px solid #282B3D; border-radius: 20px;
@@ -106,6 +113,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
 
+    /* Modal Dialog */
+    .modal {
+      position: absolute; inset: 0; background: rgba(15,16,23,0.95); backdrop-filter: blur(10px);
+      display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
+    }
+    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
+    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 10px; font-size: 13px; }
+    .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; }
+
     /* Bottom Input Pill Bar */
     .input-bar {
       background: #1A1C28; border: 1px solid #2A2D40; border-radius: 28px;
@@ -129,7 +146,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="header">
       <div class="header-btn" onclick="toggleView()">≡</div>
       <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn" onclick="sendCmd('system')">💻</div>
+      <div class="header-btn" onclick="openGmailModal()">⚙️</div>
+    </div>
+
+    <!-- Status Badges -->
+    <div class="badge-bar">
+      <div class="badge active" id="badgeAi">● G4F GPT-4o AI</div>
+      <div class="badge" id="badgeGmail">📧 Gmail: Disconnected</div>
+      <div class="badge" id="badgeDb">💾 SQLite DB</div>
     </div>
 
     <!-- Centerpiece Avatar -->
@@ -152,11 +176,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <!-- Quick Action Chips -->
     <div class="quick-actions">
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
-      <div class="action-chip" onclick="sendCmd('draft email')">📧 Draft Email</div>
+      <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
+      <div class="action-chip" onclick="sendCmd('draft email')">✍️ Draft Email</div>
       <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
       <div class="action-chip" onclick="sendCmd('schedule')">📅 View Schedule</div>
       <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
-      <div class="action-chip" onclick="sendCmd('brainstorm')">💡 Brainstorm Plan</div>
     </div>
 
     <!-- Main View (Tool Grid / Chat) -->
@@ -180,6 +204,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
+
+    <!-- Gmail Config Modal -->
+    <div class="modal" id="gmailModal" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-title">⚙️ Connect Real Gmail Account</div>
+        <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
+          Enter your Gmail address & 16-character Google App Password (generate at <b>myaccount.google.com/apppasswords</b>).
+        </p>
+        <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
+        <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
+        <button class="modal-btn" onclick="saveGmailConfig()">Save & Connect Inbox</button>
+        <button class="modal-btn" style="background:#282B3D;margin-top:8px" onclick="closeGmailModal()">Cancel</button>
+      </div>
+    </div>
 
     <!-- Bottom Input Pill Bar -->
     <div class="input-bar">
@@ -251,6 +289,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         grid.style.display = 'none';
         chat.style.display = 'flex';
       }
+    }
+
+    function openGmailModal() { document.getElementById('gmailModal').style.display = 'flex'; }
+    function closeGmailModal() { document.getElementById('gmailModal').style.display = 'none'; }
+
+    async function saveGmailConfig() {
+      const addr = document.getElementById('gmailAddr').value.trim();
+      const pass = document.getElementById('gmailPass').value.trim();
+      if (!addr || !pass) { alert("Please enter both Gmail Address & App Password"); return; }
+
+      const res = await fetch('/api/gmail_config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: addr, password: pass })
+      });
+      const data = await res.json();
+      closeGmailModal();
+      document.getElementById('badgeGmail').className = 'badge active';
+      document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
+      alert(data.message);
+      sendCmd('check inbox');
     }
 
     async function sendCmd(text) {
@@ -364,9 +423,10 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
         self.wfile.write(HTML_TEMPLATE.encode('utf-8'))
 
     def do_POST(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body_data = self.rfile.read(content_length).decode('utf-8')
+        
         if self.path == '/api/chat':
-            content_length = int(self.headers.get('Content-Length', 0))
-            body_data = self.rfile.read(content_length).decode('utf-8')
             try:
                 payload = json.loads(body_data)
                 user_msg = payload.get('message', '')
@@ -380,6 +440,22 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({'reply': f"Error: {str(e)}"}).encode('utf-8'))
+
+        elif self.path == '/api/gmail_config':
+            try:
+                payload = json.loads(body_data)
+                addr = payload.get('address', '')
+                passwd = payload.get('password', '')
+                gmail_service.set_credentials(addr, passwd)
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': True, 'message': 'Gmail credentials configured!'}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
 
 def run_web_app():
     port = 5050
