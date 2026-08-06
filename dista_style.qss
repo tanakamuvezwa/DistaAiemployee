@@ -1,122 +1,138 @@
 /* ============================================================
-   DISTA AI — RETRO-MODERN DARK STYLESHEET
-   Glowing Orange Highlights (#FF6B00) · Deep Obsidian Navy (#0E0F14)
+   DISTA AI — EXACT UI MATCH STYLESHEET
+   Obsidian Dark (#0F1017) · Glowing Orange (#FF6B00) · Sleek Cards
    ============================================================ */
 
 QWidget {
-    background-color: #0E0F14;
-    color: #E2F0FD;
-    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    background-color: #0F1017;
+    color: #E2E8F0;
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
     font-size: 13px;
 }
 
-/* Main Window */
 QMainWindow {
-    background-color: #0E0F14;
+    background-color: #0F1017;
 }
 
-/* Tool Shortcut Cards */
-QFrame#tool_card {
-    background-color: #161822;
+/* Header Bar */
+QLabel#header_brand {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+}
+QLabel#header_brand_accent {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #FF6B00;
+}
+
+/* Subtitle Greeting */
+QLabel#greeting_label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #E2E8F0;
+}
+
+/* Tool Integration Grid Cards */
+QFrame#tool_grid_card {
+    background-color: #1A1C28;
+    border: 1px solid #282B3D;
+    border-radius: 16px;
+    padding: 12px;
+}
+QFrame#tool_grid_card:hover {
+    background-color: #222536;
+    border: 1px solid #FF6B00;
+}
+
+QLabel#card_title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+QLabel#card_desc {
+    font-size: 11px;
+    color: #8C94A8;
+}
+
+/* Recent Chat List Items */
+QListWidget#chat_history_list {
+    background-color: transparent;
+    border: none;
+}
+QListWidget#chat_history_list::item {
+    background-color: #1A1C28;
     border: 1px solid #282B3D;
     border-radius: 12px;
-    padding: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
 }
-QFrame#tool_card:hover {
+QListWidget#chat_history_list::item:hover {
+    background-color: #222536;
     border: 1px solid #FF6B00;
-    background-color: #1E202E;
 }
 
-/* Glowing Orange Accent Buttons */
-QPushButton {
+/* Bottom Input Capsule Bar */
+QFrame#input_capsule {
     background-color: #1A1C28;
-    color: #E2F0FD;
-    border: 1px solid #32364A;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: 600;
+    border: 1px solid #2A2D40;
+    border-radius: 24px;
+    padding: 4px 6px 4px 14px;
 }
-QPushButton:hover {
+
+QLineEdit#input_field {
+    background-color: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 13px;
+}
+QLineEdit#input_field::placeholder {
+    color: #64748B;
+}
+
+/* Bright Orange Mic Circle Button */
+QPushButton#btn_mic_circle {
     background-color: #FF6B00;
     color: #FFFFFF;
-    border: 1px solid #FF8800;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 40px;
+    max-width: 40px;
+    min-height: 40px;
+    max-height: 40px;
 }
-QPushButton:pressed {
+QPushButton#btn_mic_circle:hover {
+    background-color: #FF8800;
+}
+QPushButton#btn_mic_circle:pressed {
     background-color: #CC5500;
 }
 
-/* Special Primary Accent Buttons */
-QPushButton#btn_primary {
-    background-color: #FF6B00;
-    color: #FFFFFF;
-    border: 1px solid #FF8800;
-    font-weight: 700;
-}
-QPushButton#btn_primary:hover {
-    background-color: #FF8800;
-    box-shadow: 0 0 15px rgba(255, 107, 0, 0.6);
-}
-
-/* Mic Active Button */
-QPushButton#btn_mic[active="true"] {
-    background-color: #00E5FF;
-    color: #0E0F14;
-    border: 1px solid #00E5FF;
-}
-
-/* Input Fields */
-QLineEdit, QTextEdit {
-    background-color: #141620;
-    color: #F0F6FF;
-    border: 1px solid #2A2D40;
-    border-radius: 8px;
-    padding: 10px;
-    selection-background-color: #FF6B00;
-}
-QLineEdit:focus, QTextEdit:focus {
-    border: 1px solid #FF6B00;
-    background-color: #1A1D2A;
-}
-
-/* Tab Widgets */
-QTabWidget::pane {
-    border: 1px solid #282B3D;
-    border-radius: 8px;
-    background-color: #141620;
-}
+/* Tab Bar */
 QTabBar::tab {
-    background-color: #161822;
+    background-color: #1A1C28;
     color: #8C94A8;
-    padding: 8px 18px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    margin-right: 2px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-right: 6px;
+    font-weight: 600;
 }
 QTabBar::tab:selected {
     background-color: #FF6B00;
     color: #FFFFFF;
-    font-weight: bold;
 }
 
 /* Scrollbars */
 QScrollBar:vertical {
     border: none;
-    background: #10121A;
-    width: 6px;
-    border-radius: 3px;
+    background: transparent;
+    width: 4px;
 }
 QScrollBar::handle:vertical {
-    background: #2A2D40;
-    border-radius: 3px;
-}
-QScrollBar::handle:vertical:hover {
-    background: #FF6B00;
-}
-
-/* Status Labels */
-QLabel#status_label {
-    color: #FF8800;
-    font-size: 11px;
-    letter-spacing: 1px;
-    font-weight: bold;
+    background: #282B3D;
+    border-radius: 2px;
 }

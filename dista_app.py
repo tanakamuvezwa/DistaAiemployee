@@ -3,12 +3,13 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QTabWidget, QFrame,
-    QSplitter, QListWidget, QListWidgetItem, QStackedWidget, QMessageBox
+    QGridLayout, QListWidget, QListWidgetItem, QStackedWidget
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QFont
 
 from dista_avatar import DistaAvatar
+from dista_waveform import DistaWaveform
 from dista_voice import TTSWorker, STTWorker
 from dista_brain import DistaBrain
 from dista_tools import EmailTool, DocsTool, MessagesTool
@@ -17,16 +18,16 @@ from dista_tools import EmailTool, DocsTool, MessagesTool
 class DistaApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Dista AI — Local Desktop Assistant")
-        self.resize(1000, 780)
-        self.setMinimumSize(850, 650)
+        self.setWindowTitle("DISTA AI")
+        self.resize(440, 820)
+        self.setMinimumSize(380, 700)
 
-        # Core Components
+        # Core Engine Setup
         self.brain = DistaBrain()
         self.tts_worker = None
         self.stt_worker = None
 
-        # Load QSS Style
+        # Load QSS Theme
         qss_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dista_style.qss")
         if os.path.exists(qss_path):
             with open(qss_path, "r", encoding="utf-8") as f:
@@ -34,175 +35,208 @@ class DistaApp(QMainWindow):
 
         self._init_ui()
 
-        # Initial Greeting
-        QTimer.singleShot(500, self._speak_greeting)
+        # Initial Speech Greeting
+        QTimer.singleShot(400, self._speak_greeting)
 
     def _init_ui(self):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(16)
+        main_layout.setContentsMargins(18, 16, 18, 16)
+        main_layout.setSpacing(12)
 
-        # ── 1. TOP AVATAR HUD SECTION ──────────────────────────────────
-        top_hud = QFrame()
-        top_hud.setObjectName("tool_card")
-        top_layout = QVBoxLayout(top_hud)
-        top_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        top_layout.setContentsMargins(10, 10, 10, 10)
+        # ── 1. HEADER BAR ──────────────────────────────────────────────
+        header_layout = QHBoxLayout()
+        
+        btn_menu = QPushButton("≡")
+        btn_menu.setFixedSize(32, 32)
+        btn_menu.setStyleSheet("border:none; font-size:20px; color:#8C94A8; font-weight:bold;")
+        
+        brand_layout = QHBoxLayout()
+        brand_layout.setSpacing(4)
+        lbl_dista = QLabel("DISTA")
+        lbl_dista.setObjectName("header_brand")
+        lbl_ai = QLabel("AI")
+        lbl_ai.setObjectName("header_brand_accent")
+        brand_layout.addWidget(lbl_dista)
+        brand_layout.addWidget(lbl_ai)
+        brand_layout.addStretch()
 
-        # Title Tag
-        title_lbl = QLabel("DISTA AI // LOCAL OFFLINE INTERFACE")
-        title_lbl.setObjectName("status_label")
-        title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        top_layout.addWidget(title_lbl)
+        btn_user = QPushButton("👤")
+        btn_user.setFixedSize(32, 32)
+        btn_user.setStyleSheet("background:#1A1C28; border:1px solid #282B3D; border-radius:16px; font-size:14px;")
 
-        # Pixel Avatar
+        header_layout.addWidget(btn_menu)
+        header_layout.addLayout(brand_layout)
+        header_layout.addWidget(btn_user)
+        main_layout.addLayout(header_layout)
+
+        # ── 2. CENTERPIECE AVATAR & GREETING ────────────────────────────
+        avatar_box = QVBoxLayout()
+        avatar_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar_box.setSpacing(8)
+
         self.avatar = DistaAvatar()
-        top_layout.addWidget(self.avatar, alignment=Qt.AlignmentFlag.AlignCenter)
+        avatar_box.addWidget(self.avatar, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # Avatar Status Badge
-        self.state_label = QLabel("SYSTEM IDLE // AWAITING COMMAND")
-        self.state_label.setStyleSheet("color: #8C94A8; font-weight: bold; font-size: 11px;")
-        self.state_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        top_layout.addWidget(self.state_label)
+        self.lbl_greeting = QLabel("Hello! I'm Dista. How can I\nassist you today?")
+        self.lbl_greeting.setObjectName("greeting_label")
+        self.lbl_greeting.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar_box.addWidget(self.lbl_greeting)
 
-        main_layout.addWidget(top_hud)
+        # Audio Waveform Visualizer
+        self.waveform = DistaWaveform()
+        avatar_box.addWidget(self.waveform, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # ── 2. TOOL SHORTCUT CARDS & WORKSPACE TABS ────────────────────
-        shortcuts_layout = QHBoxLayout()
-        shortcuts_layout.setSpacing(12)
+        main_layout.addLayout(avatar_box)
 
-        # Shortcut Tiles
-        btn_email_card = QPushButton("📧 Emails\n(3 Local)")
-        btn_email_card.setMinimumHeight(54)
-        btn_email_card.clicked.connect(lambda: self.tabs.setCurrentIndex(0))
+        # ── 3. MAIN SECTION TABS (GRID / CHATS) ─────────────────────────
+        self.section_tabs = QTabWidget()
+        
+        # TAB 1: TOOL INTEGRATIONS (2x2 GRID MATCHING SCREENSHOT)
+        tab_grid = QWidget()
+        grid_layout = QVBoxLayout(tab_grid)
+        grid_layout.setContentsMargins(0, 8, 0, 0)
+        
+        lbl_section1 = QLabel("TOOL INTEGRATIONS")
+        lbl_section1.setStyleSheet("color:#64748B; font-size:10px; font-weight:800; letter-spacing:1px;")
+        grid_layout.addWidget(lbl_section1)
 
-        btn_docs_card = QPushButton("📄 Docs\n(Workspace Files)")
-        btn_docs_card.setMinimumHeight(54)
-        btn_docs_card.clicked.connect(lambda: self.tabs.setCurrentIndex(1))
+        grid_cards = QGridLayout()
+        grid_cards.setSpacing(10)
 
-        btn_msg_card = QPushButton("💬 Messages\n(Local Inbox)")
-        btn_msg_card.setMinimumHeight(54)
-        btn_msg_card.clicked.connect(lambda: self.tabs.setCurrentIndex(2))
+        # Email Card
+        card_email = self._create_tool_card("✉️", "Email", "Check Emails\nUnread: 3", lambda: self._on_card_click("show_emails"))
+        # Docs Card
+        card_docs = self._create_tool_card("📄", "Docs", "Open Documents\nRecent: 5", lambda: self._on_card_click("show_docs"))
+        # Messages Card
+        card_msg = self._create_tool_card("💬", "Messages", "Send Messages\nNotifications: 2", lambda: self._on_card_click("show_messages"))
+        # Schedule Card
+        card_sched = self._create_tool_card("📅", "Schedule", "View Schedule\nEvents: 4", lambda: self._on_card_click("show_schedule"))
 
-        shortcuts_layout.addWidget(btn_email_card)
-        shortcuts_layout.addWidget(btn_docs_card)
-        shortcuts_layout.addWidget(btn_msg_card)
+        grid_cards.addWidget(card_email, 0, 0)
+        grid_cards.addWidget(card_docs, 0, 1)
+        grid_cards.addWidget(card_msg, 1, 0)
+        grid_cards.addWidget(card_sched, 1, 1)
 
-        main_layout.addLayout(shortcuts_layout)
+        grid_layout.addLayout(grid_cards)
+        self.section_tabs.addTab(tab_grid, "Tools")
 
-        # Workspace Tab Widget
-        self.tabs = QTabWidget()
+        # TAB 2: RECENT CHATS (MATCHING SCREENSHOT 1)
+        tab_chats = QWidget()
+        chats_layout = QVBoxLayout(tab_chats)
+        chats_layout.setContentsMargins(0, 8, 0, 0)
 
-        # TAB 1: EMAILS
-        self.tab_email = QWidget()
-        email_layout = QHBoxLayout(self.tab_email)
-        self.email_list = QListWidget()
-        self.email_list.itemClicked.connect(self._on_email_selected)
-        self.email_preview = QTextEdit()
-        self.email_preview.setReadOnly(True)
-        email_layout.addWidget(self.email_list, 1)
-        email_layout.addWidget(self.email_preview, 2)
-        self.tabs.addTab(self.tab_email, "📧 Email Center")
+        lbl_section2 = QLabel("RECENT CHATS")
+        lbl_section2.setStyleSheet("color:#64748B; font-size:10px; font-weight:800; letter-spacing:1px;")
+        chats_layout.addWidget(lbl_section2)
 
-        # TAB 2: DOCUMENTS
-        self.tab_docs = QWidget()
-        docs_layout = QHBoxLayout(self.tab_docs)
-        self.docs_list = QListWidget()
-        self.docs_list.itemClicked.connect(self._on_doc_selected)
-        self.doc_editor = QTextEdit()
-        docs_layout.addWidget(self.docs_list, 1)
-        docs_layout.addWidget(self.doc_editor, 2)
-        self.tabs.addTab(self.tab_docs, "📄 Workspace Docs")
+        self.chat_list = QListWidget()
+        self.chat_list.setObjectName("chat_history_list")
+        self._add_recent_chat_item("✉️", "Draft Email to Team", "7 hours ago · 16:14")
+        self._add_recent_chat_item("📄", "Summarize Project Proposal", "7 hours ago · 13:42")
+        self._add_recent_chat_item("📅", "Schedule Meeting", "5 hours ago · 13:38")
+        chats_layout.addWidget(self.chat_list)
 
-        # TAB 3: MESSAGES & CHAT STREAM
-        self.tab_msg = QWidget()
-        msg_layout = QVBoxLayout(self.tab_msg)
-        self.chat_stream = QTextEdit()
-        self.chat_stream.setReadOnly(True)
-        msg_layout.addWidget(self.chat_stream)
-        self.tabs.addTab(self.tab_msg, "💬 Command Stream & Inbox")
+        self.section_tabs.addTab(tab_chats, "Recent Chats")
 
-        main_layout.addWidget(self.tabs, 1)
+        main_layout.addWidget(self.section_tabs, 1)
 
-        # ── 3. BOTTOM INPUT BAR (TEXT + VOICE) ─────────────────────────
-        input_frame = QFrame()
-        input_frame.setObjectName("tool_card")
-        input_layout = QHBoxLayout(input_frame)
-        input_layout.setContentsMargins(8, 8, 8, 8)
+        # ── 4. BOTTOM INPUT CAPSULE BAR (MATCHING SCREENSHOT) ───────────
+        input_capsule = QFrame()
+        input_capsule.setObjectName("input_capsule")
+        capsule_layout = QHBoxLayout(input_capsule)
+        capsule_layout.setContentsMargins(12, 4, 4, 4)
 
-        # Mic Button
-        self.btn_mic = QPushButton("🎤 Voice")
-        self.btn_mic.setObjectName("btn_mic")
-        self.btn_mic.clicked.connect(self._toggle_voice_input)
-        input_layout.addWidget(self.btn_mic)
-
-        # Text Input
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Ask Dista anything... (e.g. 'summarize emails', 'read docs', 'hello')")
+        self.input_field.setObjectName("input_field")
+        self.input_field.setPlaceholderText("Ask Dista anything...")
         self.input_field.returnPressed.connect(self._on_text_submitted)
-        input_layout.addWidget(self.input_field)
+        capsule_layout.addWidget(self.input_field)
 
-        # Transmit Button
-        self.btn_send = QPushButton("Transmit ➔")
-        self.btn_send.setObjectName("btn_primary")
-        self.btn_send.clicked.connect(self._on_text_submitted)
-        input_layout.addWidget(self.btn_send)
+        self.btn_mic = QPushButton("🎤")
+        self.btn_mic.setObjectName("btn_mic_circle")
+        self.btn_mic.clicked.connect(self._toggle_voice_input)
+        capsule_layout.addWidget(self.btn_mic)
 
-        main_layout.addWidget(input_frame)
+        main_layout.addWidget(input_capsule)
 
-        # Load Data into UI
-        self._refresh_emails()
-        self._refresh_docs()
-        self._refresh_messages()
+    def _create_tool_card(self, icon_str: str, title: str, desc: str, callback) -> QFrame:
+        card = QFrame()
+        card.setObjectName("tool_grid_card")
+        card.setCursor(Qt.CursorShape.PointingHandCursor)
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(4)
 
-    # ── EVENT HANDLERS & LOGIC ─────────────────────────────────────────
+        header = QHBoxLayout()
+        lbl_icon = QLabel(icon_str)
+        lbl_icon.setStyleSheet("font-size:18px;")
+        lbl_title = QLabel(title)
+        lbl_title.setObjectName("card_title")
+        header.addWidget(lbl_icon)
+        header.addWidget(lbl_title)
+        header.addStretch()
+
+        lbl_desc = QLabel(desc)
+        lbl_desc.setObjectName("card_desc")
+
+        layout.addLayout(header)
+        layout.addWidget(lbl_desc)
+
+        card.mousePressEvent = lambda e: callback()
+        return card
+
+    def _add_recent_chat_item(self, icon_str: str, title: str, subtitle: str):
+        item = QListWidgetItem(f"{icon_str}  {title}\n    {subtitle}")
+        self.chat_list.addItem(item)
+
+    # ── LOGIC & HANDLERS ──────────────────────────────────────────────
 
     def _speak_greeting(self):
-        text = "Systems operational. I am Dista AI, running 100% locally on your machine."
-        self._append_chat("DISTA AI", text)
+        text = "Hello! I'm Dista. How can I assist you today?"
         self.speak(text)
 
     def _on_text_submitted(self):
-        user_text = self.input_field.text().trim() if hasattr(self.input_field.text(), 'trim') else self.input_field.text().strip()
-        if not user_text:
+        text = self.input_field.text().strip()
+        if not text:
             return
         self.input_field.clear()
 
-        # Display user input
-        self._append_chat("YOU", user_text)
-
-        # Set Avatar to THINKING
+        # Set avatar & waveform to thinking state
         self.avatar.set_state(DistaAvatar.THINKING)
-        self.state_label.setText("PROCESSING INTENT...")
+        self.waveform.set_active(True)
 
-        # Process in brain
-        QTimer.singleShot(150, lambda: self._process_brain(user_text))
+        QTimer.singleShot(150, lambda: self._process_input(text))
 
-    def _process_brain(self, user_text: str):
-        result = self.brain.process_input(user_text)
+    def _process_input(self, text: str):
+        result = self.brain.process_input(text)
         reply = result["reply"]
-        action = result.get("action")
-
-        self._append_chat("DISTA AI", reply)
-
-        # Switch tabs if action returned
-        if action == "show_emails":
-            self.tabs.setCurrentIndex(0)
-            self._refresh_emails()
-        elif action == "show_docs":
-            self.tabs.setCurrentIndex(1)
-            self._refresh_docs()
-        elif action == "show_messages":
-            self.tabs.setCurrentIndex(2)
-            self._refresh_messages()
-
-        # Speak back
+        self.lbl_greeting.setText(reply)
         self.speak(reply)
 
+    def _on_card_click(self, action_code: str):
+        if action_code == "show_emails":
+            unread = EmailTool.get_unread_emails()
+            msg = f"You have {len(unread)} unread emails." if unread else "Inbox is clear."
+            self.lbl_greeting.setText(msg)
+            self.speak(msg)
+        elif action_code == "show_docs":
+            docs = DocsTool.list_documents()
+            msg = f"Found {len(docs)} documents in workspace."
+            self.lbl_greeting.setText(msg)
+            self.speak(msg)
+        elif action_code == "show_messages":
+            msgs = MessagesTool.get_recent_messages()
+            msg = f"Recent message: '{msgs[0]['message']}'" if msgs else "No messages."
+            self.lbl_greeting.setText(msg)
+            self.speak(msg)
+        elif action_code == "show_schedule":
+            msg = "Your schedule has 4 events planned for today."
+            self.lbl_greeting.setText(msg)
+            self.speak(msg)
+
     def speak(self, text: str):
-        """Triggers pyttsx3 in background thread"""
         if self.tts_worker and self.tts_worker.isRunning():
             self.tts_worker.terminate()
 
@@ -213,20 +247,19 @@ class DistaApp(QMainWindow):
 
     def _on_speech_started(self):
         self.avatar.set_state(DistaAvatar.SPEAKING)
-        self.state_label.setText("SPEAKING...")
+        self.waveform.set_active(True)
 
     def _on_speech_finished(self):
         self.avatar.set_state(DistaAvatar.IDLE)
-        self.state_label.setText("SYSTEM IDLE // AWAITING COMMAND")
+        self.waveform.set_active(False)
 
     def _toggle_voice_input(self):
         if self.stt_worker and self.stt_worker.isRunning():
             return
 
         self.avatar.set_state(DistaAvatar.LISTENING)
-        self.state_label.setText("LISTENING TO MICROPHONE...")
-        self.btn_mic.setProperty("active", "true")
-        self.btn_mic.setStyle(self.btn_mic.style())
+        self.waveform.set_active(True)
+        self.lbl_greeting.setText("Listening...")
 
         self.stt_worker = STTWorker()
         self.stt_worker.recognized_text.connect(self._on_voice_recognized)
@@ -238,65 +271,13 @@ class DistaApp(QMainWindow):
         self.input_field.setText(text)
         self._on_text_submitted()
 
-    def _on_voice_error(self, err_msg: str):
-        self.state_label.setText(f"MIC NOTICE: {err_msg}")
+    def _on_voice_error(self, err: str):
+        self.lbl_greeting.setText(f"Mic Notice: {err}")
 
     def _on_voice_finished(self):
-        self.btn_mic.setProperty("active", "false")
-        self.btn_mic.setStyle(self.btn_mic.style())
         if self.avatar.state == DistaAvatar.LISTENING:
             self.avatar.set_state(DistaAvatar.IDLE)
-            self.state_label.setText("SYSTEM IDLE // AWAITING COMMAND")
-
-    # ── DATA POPULATION HELPERS ────────────────────────────────────────
-
-    def _append_chat(self, sender: str, message: str):
-        timestamp = QTimer.singleShot
-        fmt = f"<div style='margin-bottom:8px;'><b><span style='color:#FF6B00;'>[{sender}]</span>:</b> {message}</div>"
-        self.chat_stream.append(fmt)
-
-    def _refresh_emails(self):
-        self.email_list.clear()
-        emails = EmailTool.get_all_emails()
-        for e in emails:
-            item = QListWidgetItem(f"[{e['priority']}] {e['sender']} — {e['subject']}")
-            item.setData(Qt.ItemDataRole.UserRole, e)
-            self.email_list.addItem(item)
-        if emails:
-            self.email_list.setCurrentRow(0)
-            self._on_email_selected(self.email_list.item(0))
-
-    def _on_email_selected(self, item):
-        if not item:
-            return
-        e = item.data(Qt.ItemDataRole.UserRole)
-        self.email_preview.setHtml(f"""
-            <h3 style="color:#FF6B00;">{e['subject']}</h3>
-            <p><b>From:</b> {e['sender']} | <b>Priority:</b> {e['priority']} | <b>Time:</b> {e['timestamp']}</p>
-            <hr style="border:1px solid #282B3D;"/>
-            <p style="font-size:14px;line-height:1.5;">{e['body']}</p>
-        """)
-
-    def _refresh_docs(self):
-        self.docs_list.clear()
-        docs = DocsTool.list_documents()
-        for d in docs:
-            self.docs_list.addItem(d)
-        if docs:
-            self.docs_list.setCurrentRow(0)
-            self._on_doc_selected(self.docs_list.item(0))
-
-    def _on_doc_selected(self, item):
-        if not item:
-            return
-        filename = item.text()
-        content = DocsTool.read_document(filename)
-        self.doc_editor.setPlainText(content)
-
-    def _refresh_messages(self):
-        msgs = MessagesTool.get_recent_messages()
-        for m in reversed(msgs):
-            self._append_chat(m['contact'] if m['direction'] == 'INCOMING' else 'YOU', m['message'])
+            self.waveform.set_active(False)
 
 
 def main():
