@@ -23,12 +23,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     /* Phone Shell Container */
     .app-card {
       width: 100%;
-      max-width: 420px;
-      height: 820px;
+      max-width: 440px;
+      height: 860px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,107,0,0.15);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 40px rgba(255,107,0,0.18);
       display: flex;
       flex-direction: column;
       padding: 24px 20px;
@@ -37,53 +37,72 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
     .brand span { color: #FF6B00; }
-    .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+    .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+    .header-btn:hover { border-color: #FF6B00; color: #FFF; }
 
     /* Center Avatar Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 16px; }
+    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-bottom: 12px; }
     .avatar-ring {
-      width: 160px; height: 160px; border-radius: 50%;
+      width: 150px; height: 150px; border-radius: 50%;
       border: 2.5px solid #FF6B00;
-      box-shadow: 0 0 25px rgba(255,107,0,0.4), inset 0 0 20px rgba(255,107,0,0.15);
+      box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
       display: flex; align-items: center; justify-content: center;
       position: relative;
     }
+    .avatar-ring.listening { border-color: #00E5FF; box-shadow: 0 0 30px rgba(0,229,255,0.6); }
+    .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
+
     .pixel-avatar {
-      width: 110px; height: 110px;
+      width: 100px; height: 100px;
       background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .pixel-eyes { display: flex; gap: 24px; margin-top: -10px; }
-    .pixel-eye { width: 14px; height: 14px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
-    .pixel-mouth { width: 24px; height: 4px; background: #282C3A; margin-top: 14px; border-radius: 2px; }
-    
-    .greeting { font-size: 14px; font-weight: 600; color: #E2E8F0; max-width: 280px; line-height: 1.4; }
+    .pixel-eyes { display: flex; gap: 22px; margin-top: -8px; }
+    .pixel-eye { width: 13px; height: 13px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
+    .pixel-eye.listening { background: #00E5FF; box-shadow: 0 0 10px #00E5FF; }
+    .pixel-mouth { width: 22px; height: 4px; background: #282C3A; margin-top: 14px; border-radius: 2px; }
+    .pixel-mouth.speaking { background: #FF6B00; height: 8px; animation: mouthTalk 0.2s infinite alternate; }
+
+    @keyframes mouthTalk { from { height: 3px; } to { height: 10px; } }
+
+    .greeting { font-size: 13px; font-weight: 600; color: #E2E8F0; max-width: 320px; line-height: 1.4; min-height: 38px; }
 
     /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; }
-    .wave-bar { width: 4px; height: 12px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
+    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 32px; }
+    .wave-bar { width: 4px; height: 10px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
     .wave-bar.white { background: #FFFFFF; }
 
+    /* Action Shortcut Bar */
+    .quick-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
+    .quick-actions::-webkit-scrollbar { display: none; }
+    .action-chip {
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 20px;
+      padding: 6px 14px; font-size: 11px; font-weight: 600; color: #CBD5E1;
+      white-space: nowrap; cursor: pointer; transition: all 0.2s;
+    }
+    .action-chip:hover { border-color: #FF6B00; color: #FFF; background: #222536; }
+
     /* Tool Grid (2x2) */
-    .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+    .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
     .tool-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 14px;
-      cursor: pointer; transition: all 0.2s ease;
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 12px;
+      cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between;
     }
     .tool-card:hover { border-color: #FF6B00; background: #222536; transform: translateY(-2px); }
-    .card-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .card-hdr { display: flex; align-items: center; gap: 8px; }
     .card-icon { font-size: 18px; }
-    .card-title { font-size: 14px; font-weight: 700; color: #FFF; }
-    .card-sub { font-size: 11px; color: #8C94A8; line-height: 1.3; }
+    .card-title { font-size: 13px; font-weight: 700; color: #FFF; }
+    .card-sub { font-size: 11px; color: #8C94A8; line-height: 1.3; margin-top: 4px; }
 
     /* Chat Stream View */
-    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; padding-right: 4px; }
-    .msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 13px; max-width: 88%; line-height: 1.4; }
+    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+    .msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 12.5px; max-width: 90%; line-height: 1.4; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
 
@@ -98,35 +117,46 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .mic-btn {
       width: 40px; height: 40px; border-radius: 20px; background: #FF6B00; border: none;
       color: #FFF; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 15px rgba(255,107,0,0.5); transition: transform 0.15s;
+      box-shadow: 0 0 15px rgba(255,107,0,0.5); transition: all 0.2s;
     }
-    .mic-btn:hover { transform: scale(1.05); background: #FF8800; }
+    .mic-btn.active { background: #00E5FF; box-shadow: 0 0 20px rgba(0,229,255,0.7); color: #0F1017; }
+    .mic-btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
   <div class="app-card">
     <!-- Header -->
     <div class="header">
-      <div class="header-btn">≡</div>
+      <div class="header-btn" onclick="toggleView()">≡</div>
       <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn">👤</div>
+      <div class="header-btn" onclick="sendCmd('system')">💻</div>
     </div>
 
     <!-- Centerpiece Avatar -->
     <div class="avatar-box">
-      <div class="avatar-ring">
+      <div class="avatar-ring" id="avatarRing">
         <div class="pixel-avatar">
           <div class="pixel-eyes">
-            <div class="pixel-eye"></div>
-            <div class="pixel-eye"></div>
+            <div class="pixel-eye" id="eyeL"></div>
+            <div class="pixel-eye" id="eyeR"></div>
           </div>
-          <div class="pixel-mouth"></div>
+          <div class="pixel-mouth" id="pixelMouth"></div>
         </div>
       </div>
       <div class="greeting" id="greetingText">Hello! I'm Dista. How can I assist you today?</div>
       
       <!-- Waveform -->
       <div class="waveform" id="waveform"></div>
+    </div>
+
+    <!-- Quick Action Chips -->
+    <div class="quick-actions">
+      <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
+      <div class="action-chip" onclick="sendCmd('draft email')">📧 Draft Email</div>
+      <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
+      <div class="action-chip" onclick="sendCmd('schedule')">📅 View Schedule</div>
+      <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
+      <div class="action-chip" onclick="sendCmd('brainstorm')">💡 Brainstorm Plan</div>
     </div>
 
     <!-- Main View (Tool Grid / Chat) -->
@@ -143,9 +173,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div class="card-hdr"><span class="card-icon">💬</span><span class="card-title">Messages</span></div>
         <div class="card-sub">Send Messages<br/><b style="color:#FF6B00">Notifications: 2</b></div>
       </div>
-      <div class="tool-card" onclick="sendCmd('time')">
+      <div class="tool-card" onclick="sendCmd('schedule')">
         <div class="card-hdr"><span class="card-icon">📅</span><span class="card-title">Schedule</span></div>
-        <div class="card-sub">View Schedule<br/><b style="color:#FF6B00">Events: 4</b></div>
+        <div class="card-sub">View Schedule<br/><b style="color:#FF6B00">Events: 3</b></div>
       </div>
     </div>
 
@@ -153,13 +183,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <!-- Bottom Input Pill Bar -->
     <div class="input-bar">
-      <input type="text" id="userInput" placeholder="Ask Dista anything..." onkeydown="if(event.key==='Enter') sendInput()" />
-      <button class="mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
+      <input type="text" id="userInput" placeholder="Speak or type command for Dista..." onkeydown="if(event.key==='Enter') sendInput()" />
+      <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Toggle Voice Recognition">🎤</button>
     </div>
   </div>
 
   <script>
-    // Build Waveform Bars
+    let isListening = false;
+    let isSpeaking = false;
+
+    // Build 32 Waveform Bars
     const waveContainer = document.getElementById('waveform');
     for (let i = 0; i < 32; i++) {
       const bar = document.createElement('div');
@@ -167,23 +200,56 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       waveContainer.appendChild(bar);
     }
 
-    function animateWaveform(active) {
+    function animateWaveform() {
       const bars = document.querySelectorAll('.wave-bar');
       bars.forEach((bar, i) => {
-        const h = active ? Math.floor(Math.random() * 26 + 6) : Math.floor(Math.sin(i * 0.5) * 4 + 6);
+        const h = isSpeaking || isListening
+          ? Math.floor(Math.random() * 24 + 6)
+          : Math.floor(Math.sin(Date.now() * 0.005 + i * 0.5) * 3 + 6);
         bar.style.height = h + 'px';
       });
     }
-    setInterval(() => animateWaveform(window.isSpeaking), 100);
+    setInterval(animateWaveform, 80);
+
+    function updateAvatarState(state) {
+      const ring = document.getElementById('avatarRing');
+      const mouth = document.getElementById('pixelMouth');
+      const eyeL = document.getElementById('eyeL');
+      const eyeR = document.getElementById('eyeR');
+
+      ring.className = 'avatar-ring ' + state;
+      eyeL.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
+      eyeR.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
+      mouth.className = 'pixel-mouth ' + (state === 'speaking' ? 'speaking' : '');
+    }
 
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = 1.0;
-        utter.onstart = () => { window.isSpeaking = true; };
-        utter.onend = () => { window.isSpeaking = false; };
+        utter.rate = 1.05;
+        utter.pitch = 1.0;
+        utter.onstart = () => {
+          isSpeaking = true;
+          updateAvatarState('speaking');
+        };
+        utter.onend = () => {
+          isSpeaking = false;
+          updateAvatarState(isListening ? 'listening' : '');
+        };
         window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function toggleView() {
+      const grid = document.getElementById('toolGrid');
+      const chat = document.getElementById('chatStream');
+      if (grid.style.display === 'none') {
+        grid.style.display = 'grid';
+        chat.style.display = 'none';
+      } else {
+        grid.style.display = 'none';
+        chat.style.display = 'flex';
       }
     }
 
@@ -206,7 +272,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       chat.innerHTML += `<div class="msg-bubble msg-user">${text}</div>`;
       chat.scrollTop = chat.scrollHeight;
 
-      document.getElementById('greetingText').innerText = "Processing command...";
+      document.getElementById('greetingText').innerText = "Processing...";
+      updateAvatarState('speaking');
 
       try {
         const res = await fetch('/api/chat', {
@@ -215,7 +282,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           body: JSON.stringify({ message: text })
         });
         const data = await res.json();
-        const reply = data.reply || "Done.";
+        const reply = data.reply || "Command executed.";
 
         document.getElementById('greetingText').innerText = reply;
         chat.innerHTML += `<div class="msg-bubble msg-dista">${reply}</div>`;
@@ -223,27 +290,61 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         speakText(reply);
       } catch (e) {
-        document.getElementById('greetingText').innerText = "Error contacting local Python backend.";
+        document.getElementById('greetingText').innerText = "Error contacting Dista AI Python backend.";
+        updateAvatarState('');
       }
     }
 
     function toggleVoice() {
       if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-        alert("Speech recognition not supported in this browser. Please use keyboard input.");
+        alert("Web Speech API not supported in this browser. Please use Chrome/Edge or type below.");
         return;
       }
+
+      const micBtn = document.getElementById('micBtn');
+      if (isListening) {
+        isListening = false;
+        micBtn.classList.remove('active');
+        updateAvatarState('');
+        document.getElementById('greetingText').innerText = "Voice recognition paused.";
+        return;
+      }
+
       const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
       const rec = new Speech();
-      rec.onstart = () => { document.getElementById('greetingText').innerText = "Listening..."; };
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      rec.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('active');
+        updateAvatarState('listening');
+        document.getElementById('greetingText').innerText = "Listening... State your command.";
+      };
+
       rec.onresult = (e) => {
-        const text = e.results[0][0].transcript;
-        document.getElementById('userInput').value = text;
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
         sendInput();
       };
+
+      rec.onerror = (e) => {
+        isListening = false;
+        micBtn.classList.remove('active');
+        updateAvatarState('');
+        document.getElementById('greetingText').innerText = "Voice input stopped. Click mic to speak again.";
+      };
+
+      rec.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('active');
+        if (!isSpeaking) updateAvatarState('');
+      };
+
       rec.start();
     }
 
-    // Speak initial greeting
+    // Speak initial greeting on load
     setTimeout(() => speakText("Hello! I'm Dista. How can I assist you today?"), 500);
   </script>
 </body>
