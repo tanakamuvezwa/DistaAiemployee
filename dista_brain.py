@@ -2,9 +2,13 @@ import os
 import re
 import math
 import platform
-import psutil
 from datetime import datetime
 from dista_tools import EmailTool, DocsTool, MessagesTool, WORKSPACE_DIR
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 class DistaBrain:
     """
@@ -91,10 +95,13 @@ class DistaBrain:
         # ── 6. System Diagnostics (CPU/Memory) ─────────────────────────
         if any(w in text for w in ["system", "cpu", "memory", "ram", "diagnostic", "specs", "health"]):
             try:
-                cpu_usage = psutil.cpu_percent(interval=0.1)
-                mem = psutil.virtual_memory()
-                mem_used = mem.percent
-                reply = f"System Diagnostic: OS is {platform.system()} {platform.release()}. CPU Load: {cpu_usage}%. RAM Memory Usage: {mem_used}% of {round(mem.total / (1024**3), 1)} GB. Engine is operating at peak performance."
+                if psutil:
+                    cpu_usage = psutil.cpu_percent(interval=0.1)
+                    mem = psutil.virtual_memory()
+                    mem_used = mem.percent
+                    reply = f"System Diagnostic: OS is {platform.system()} {platform.release()}. CPU Load: {cpu_usage}%. RAM Memory Usage: {mem_used}% of {round(mem.total / (1024**3), 1)} GB. Engine is operating at peak performance."
+                else:
+                    reply = f"System Diagnostic: Running on {platform.system()} {platform.release()}. All local Python services active."
             except Exception:
                 reply = f"System Diagnostic: Running on {platform.system()} {platform.release()}. All local services active."
             return {"reply": reply, "action": "show_system", "data": None}
