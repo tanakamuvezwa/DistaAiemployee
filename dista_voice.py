@@ -18,6 +18,12 @@ class TTSWorker(QThread):
     def run(self):
         self.started_speaking.emit()
         try:
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
+
             import pyttsx3
             engine = pyttsx3.init()
             
@@ -38,6 +44,11 @@ class TTSWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
         finally:
+            try:
+                import pythoncom
+                pythoncom.CoUninitialize()
+            except Exception:
+                pass
             self.finished_speaking.emit()
 
 
