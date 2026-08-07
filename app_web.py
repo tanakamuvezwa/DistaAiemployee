@@ -25,12 +25,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     /* Phone Shell Container */
     .app-card {
       width: 100%;
-      max-width: 440px;
-      height: 870px;
+      max-width: 450px;
+      height: 880px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 40px rgba(255,107,0,0.18);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 45px rgba(255,107,0,0.2);
       display: flex;
       flex-direction: column;
       padding: 24px 20px;
@@ -39,49 +39,49 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
     .brand span { color: #FF6B00; }
     .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
     .header-btn:hover { border-color: #FF6B00; color: #FFF; }
 
     /* Badges */
-    .badge-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+    .badge-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
     .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; }
     .badge.active { border-color: #FF6B00; color: #FF6B00; }
 
     /* Center Avatar Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-bottom: 10px; }
+    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 8px; }
     .avatar-ring {
-      width: 140px; height: 140px; border-radius: 50%;
+      width: 130px; height: 130px; border-radius: 50%;
       border: 2.5px solid #FF6B00;
       box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
       display: flex; align-items: center; justify-content: center;
-      position: relative;
+      position: relative; transition: all 0.3s;
     }
     .avatar-ring.listening { border-color: #00E5FF; box-shadow: 0 0 30px rgba(0,229,255,0.6); }
     .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
 
     .pixel-avatar {
-      width: 96px; height: 96px;
+      width: 90px; height: 90px;
       background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .pixel-eyes { display: flex; gap: 20px; margin-top: -8px; }
-    .pixel-eye { width: 12px; height: 12px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
+    .pixel-eyes { display: flex; gap: 18px; margin-top: -8px; }
+    .pixel-eye { width: 11px; height: 11px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
     .pixel-eye.listening { background: #00E5FF; box-shadow: 0 0 10px #00E5FF; }
-    .pixel-mouth { width: 20px; height: 4px; background: #282C3A; margin-top: 12px; border-radius: 2px; }
+    .pixel-mouth { width: 18px; height: 4px; background: #282C3A; margin-top: 10px; border-radius: 2px; }
     .pixel-mouth.speaking { background: #FF6B00; height: 8px; animation: mouthTalk 0.2s infinite alternate; }
 
-    @keyframes mouthTalk { from { height: 3px; } to { height: 10px; } }
+    @keyframes mouthTalk { from { height: 3px; } to { height: 9px; } }
 
-    .greeting { font-size: 13px; font-weight: 600; color: #E2E8F0; max-width: 330px; line-height: 1.4; min-height: 38px; }
+    .greeting { font-size: 12.5px; font-weight: 600; color: #E2E8F0; max-width: 340px; line-height: 1.4; min-height: 36px; }
 
     /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 30px; }
-    .wave-bar { width: 4px; height: 10px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
+    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 28px; }
+    .wave-bar { width: 4px; height: 8px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
     .wave-bar.white { background: #FFFFFF; }
 
     /* Action Shortcut Bar */
@@ -108,19 +108,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     /* Chat Stream View */
     .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
-    .msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 12.5px; max-width: 90%; line-height: 1.4; animation: fadeIn 0.2s ease; }
+    .msg-bubble { padding: 12px 15px; border-radius: 14px; font-size: 13px; max-width: 92%; line-height: 1.5; animation: fadeIn 0.2s ease; white-space: pre-wrap; word-break: break-word; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
 
-    /* Modal Dialog */
+    /* Settings Modal */
     .modal {
-      position: absolute; inset: 0; background: rgba(15,16,23,0.95); backdrop-filter: blur(10px);
+      position: absolute; inset: 0; background: rgba(15,16,23,0.96); backdrop-filter: blur(10px);
       display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
     }
-    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; }
+    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 90%; overflow-y: auto; }
     .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 10px; font-size: 13px; }
+    .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
+    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 12px; font-size: 13px; }
     .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; }
 
     /* Bottom Input Pill Bar */
@@ -144,16 +145,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="app-card">
     <!-- Header -->
     <div class="header">
-      <div class="header-btn" onclick="toggleView()">≡</div>
+      <div class="header-btn" onclick="toggleView()" title="Toggle Grid / Chat">≡</div>
       <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn" onclick="openGmailModal()">⚙️</div>
+      <div class="header-btn" onclick="openSettingsModal()" title="Settings">⚙️</div>
     </div>
 
     <!-- Status Badges -->
     <div class="badge-bar">
-      <div class="badge active" id="badgeAi">● G4F GPT-4o AI</div>
+      <div class="badge active" id="badgeAi">● GPT-4o Free AI</div>
       <div class="badge" id="badgeGmail">📧 Gmail: Disconnected</div>
-      <div class="badge" id="badgeDb">💾 SQLite DB</div>
+      <div class="badge" id="badgeDb">💾 SQLite/Mongo Active</div>
     </div>
 
     <!-- Centerpiece Avatar -->
@@ -167,7 +168,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="pixel-mouth" id="pixelMouth"></div>
         </div>
       </div>
-      <div class="greeting" id="greetingText">Hello! I'm Dista. How can I assist you today?</div>
+      <div class="greeting" id="greetingText">Hello! I'm Dista AI. Ask me anything or state your command.</div>
       
       <!-- Waveform -->
       <div class="waveform" id="waveform"></div>
@@ -177,9 +178,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="quick-actions">
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
       <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
-      <div class="action-chip" onclick="sendCmd('draft email')">✍️ Draft Email</div>
+      <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
       <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
-      <div class="action-chip" onclick="sendCmd('schedule')">📅 View Schedule</div>
       <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
     </div>
 
@@ -197,31 +197,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div class="card-hdr"><span class="card-icon">💬</span><span class="card-title">Messages</span></div>
         <div class="card-sub">Send Messages<br/><b style="color:#FF6B00">Notifications: 2</b></div>
       </div>
-      <div class="tool-card" onclick="sendCmd('schedule')">
-        <div class="card-hdr"><span class="card-icon">📅</span><span class="card-title">Schedule</span></div>
-        <div class="card-sub">View Schedule<br/><b style="color:#FF6B00">Events: 3</b></div>
+      <div class="tool-card" onclick="sendCmd('system')">
+        <div class="card-hdr"><span class="card-icon">💻</span><span class="card-title">System</span></div>
+        <div class="card-sub">CPU & Memory<br/><b style="color:#FF6B00">Status: Peak</b></div>
       </div>
     </div>
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
 
-    <!-- Gmail Config Modal -->
-    <div class="modal" id="gmailModal" style="display:none;">
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" style="display:none;">
       <div class="modal-card">
-        <div class="modal-title">⚙️ Connect Real Gmail Account</div>
-        <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
-          Enter your Gmail address & 16-character Google App Password (generate at <b>myaccount.google.com/apppasswords</b>).
-        </p>
+        <div class="modal-title">⚙️ Dista AI Configuration</div>
+        
+        <label class="modal-label">REAL GMAIL ADDRESS</label>
         <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
+        
+        <label class="modal-label">GMAIL 16-CHAR APP PASSWORD</label>
         <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
-        <button class="modal-btn" onclick="saveGmailConfig()">Save & Connect Inbox</button>
-        <button class="modal-btn" style="background:#282B3D;margin-top:8px" onclick="closeGmailModal()">Cancel</button>
+
+        <label class="modal-label">OPENROUTER API KEY (OPTIONAL)</label>
+        <input type="password" class="modal-input" id="openrouterKey" placeholder="sk-or-v1-..." />
+
+        <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
+        <button class="modal-btn" style="background:#282B3D;margin-top:8px" onclick="closeSettingsModal()">Close</button>
       </div>
     </div>
 
     <!-- Bottom Input Pill Bar -->
     <div class="input-bar">
-      <input type="text" id="userInput" placeholder="Speak or type command for Dista..." onkeydown="if(event.key==='Enter') sendInput()" />
+      <input type="text" id="userInput" placeholder="Ask Dista anything or speak..." onkeydown="if(event.key==='Enter') sendInput()" />
       <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Toggle Voice Recognition">🎤</button>
     </div>
   </div>
@@ -264,7 +269,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
+        // Clean speech text
+        const cleanText = text.replace(/[*#_`]/g, '').substring(0, 300);
+        const utter = new SpeechSynthesisUtterance(cleanText);
         utter.rate = 1.05;
         utter.pitch = 1.0;
         utter.onstart = () => {
@@ -291,25 +298,34 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
-    function openGmailModal() { document.getElementById('gmailModal').style.display = 'flex'; }
-    function closeGmailModal() { document.getElementById('gmailModal').style.display = 'none'; }
+    function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
-    async function saveGmailConfig() {
+    async function saveSettings() {
       const addr = document.getElementById('gmailAddr').value.trim();
       const pass = document.getElementById('gmailPass').value.trim();
-      if (!addr || !pass) { alert("Please enter both Gmail Address & App Password"); return; }
+      const key = document.getElementById('openrouterKey').value.trim();
 
-      const res = await fetch('/api/gmail_config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: addr, password: pass })
-      });
-      const data = await res.json();
-      closeGmailModal();
-      document.getElementById('badgeGmail').className = 'badge active';
-      document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
-      alert(data.message);
-      sendCmd('check inbox');
+      if (addr && pass) {
+        await fetch('/api/gmail_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: addr, password: pass })
+        });
+        document.getElementById('badgeGmail').className = 'badge active';
+        document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
+      }
+
+      if (key) {
+        await fetch('/api/openrouter_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: key })
+        });
+      }
+
+      closeSettingsModal();
+      alert("Settings saved successfully!");
     }
 
     async function sendCmd(text) {
@@ -331,7 +347,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       chat.innerHTML += `<div class="msg-bubble msg-user">${text}</div>`;
       chat.scrollTop = chat.scrollHeight;
 
-      document.getElementById('greetingText').innerText = "Processing...";
+      document.getElementById('greetingText').innerText = "Dista AI is thinking...";
       updateAvatarState('speaking');
 
       try {
@@ -341,9 +357,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           body: JSON.stringify({ message: text })
         });
         const data = await res.json();
-        const reply = data.reply || "Command executed.";
+        const reply = data.reply || "Done.";
 
-        document.getElementById('greetingText').innerText = reply;
+        document.getElementById('greetingText').innerText = reply.substring(0, 120) + (reply.length > 120 ? '...' : '');
         chat.innerHTML += `<div class="msg-bubble msg-dista">${reply}</div>`;
         chat.scrollTop = chat.scrollHeight;
 
@@ -404,7 +420,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     // Speak initial greeting on load
-    setTimeout(() => speakText("Hello! I'm Dista. How can I assist you today?"), 500);
+    setTimeout(() => speakText("Hello! I'm Dista AI. Ask me anything or state your command."), 500);
   </script>
 </body>
 </html>
@@ -452,6 +468,22 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': True, 'message': 'Gmail credentials configured!'}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
+
+        elif self.path == '/api/openrouter_config':
+            try:
+                payload = json.loads(body_data)
+                key = payload.get('key', '')
+                brain.openrouter_key = key
+                os.environ["OPENROUTER_API_KEY"] = key
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': True, 'message': 'OpenRouter key configured!'}).encode('utf-8'))
             except Exception as e:
                 self.send_response(500)
                 self.end_headers()
