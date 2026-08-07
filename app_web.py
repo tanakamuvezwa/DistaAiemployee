@@ -26,7 +26,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .app-card {
       width: 100%;
       max-width: 450px;
-      height: 880px;
+      height: 890px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
@@ -39,21 +39,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
     .brand span { color: #FF6B00; }
     .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
     .header-btn:hover { border-color: #FF6B00; color: #FFF; }
 
     /* Badges */
-    .badge-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; }
+    .badge-bar { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; cursor: pointer; }
     .badge.active { border-color: #FF6B00; color: #FF6B00; }
+
+    /* API Key Banner on Homescreen */
+    .api-banner {
+      background: linear-gradient(90deg, rgba(255,107,0,0.15), rgba(255,136,0,0.05));
+      border: 1px solid #FF6B00;
+      border-radius: 14px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .api-banner:hover { background: linear-gradient(90deg, rgba(255,107,0,0.25), rgba(255,136,0,0.1)); }
+    .api-banner-text { font-size: 11px; font-weight: 700; color: #FFF; }
+    .api-banner-btn { background: #FF6B00; color: #FFF; border: none; border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 800; }
 
     /* Center Avatar Box */
     .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 8px; }
     .avatar-ring {
-      width: 130px; height: 130px; border-radius: 50%;
+      width: 125px; height: 125px; border-radius: 50%;
       border: 2.5px solid #FF6B00;
       box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
       display: flex; align-items: center; justify-content: center;
@@ -63,7 +80,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
 
     .pixel-avatar {
-      width: 90px; height: 90px;
+      width: 86px; height: 86px;
       background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       position: relative;
@@ -80,7 +97,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .greeting { font-size: 12.5px; font-weight: 600; color: #E2E8F0; max-width: 340px; line-height: 1.4; min-height: 36px; }
 
     /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 28px; }
+    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 26px; }
     .wave-bar { width: 4px; height: 8px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
     .wave-bar.white { background: #FFFFFF; }
 
@@ -93,6 +110,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       white-space: nowrap; cursor: pointer; transition: all 0.2s;
     }
     .action-chip:hover { border-color: #FF6B00; color: #FFF; background: #222536; }
+    .action-chip.key-chip { background: rgba(255,107,0,0.15); border-color: #FF6B00; color: #FF6B00; font-weight: 800; }
 
     /* Tool Grid (2x2) */
     .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
@@ -113,7 +131,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
 
-    /* Settings Modal */
+    /* Modal Windows */
     .modal {
       position: absolute; inset: 0; background: rgba(15,16,23,0.96); backdrop-filter: blur(10px);
       display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
@@ -122,7 +140,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
     .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
     .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 12px; font-size: 13px; }
-    .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; }
+    .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
 
     /* Bottom Input Pill Bar */
     .input-bar {
@@ -147,14 +165,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="header">
       <div class="header-btn" onclick="toggleView()" title="Toggle Grid / Chat">≡</div>
       <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn" onclick="openSettingsModal()" title="Settings">⚙️</div>
+      <div class="header-btn" onclick="openApiKeyModal()" title="API Key Settings">🔑</div>
     </div>
 
     <!-- Status Badges -->
     <div class="badge-bar">
-      <div class="badge active" id="badgeAi">● GPT-4o Free AI</div>
-      <div class="badge" id="badgeGmail">📧 Gmail: Disconnected</div>
-      <div class="badge" id="badgeDb">💾 SQLite/Mongo Active</div>
+      <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🔑 Add API Key</div>
+      <div class="badge" id="badgeGmail" onclick="openSettingsModal()">📧 Gmail: Off</div>
+      <div class="badge" id="badgeDb">💾 Storage Active</div>
+    </div>
+
+    <!-- Homescreen API Key Banner -->
+    <div class="api-banner" id="apiBanner" onclick="openApiKeyModal()">
+      <div class="api-banner-text">🔑 Add OpenRouter or Gemini API Key for Turbo AI</div>
+      <button class="api-banner-btn">SET KEY</button>
     </div>
 
     <!-- Centerpiece Avatar -->
@@ -176,6 +200,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <!-- Quick Action Chips -->
     <div class="quick-actions">
+      <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Add API Key</div>
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
       <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
       <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
@@ -205,22 +230,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
 
-    <!-- Settings Modal -->
+    <!-- API Key Settings Modal (Homescreen Feature) -->
+    <div class="modal" id="apiKeyModal" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-title">🔑 Add Your AI API Key</div>
+        <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
+          Enter your <b>OpenRouter API Key</b> or <b>Google Gemini API Key</b> below. Dista AI will use your key for instant turbo LLM answers.
+        </p>
+
+        <label class="modal-label">OPENROUTER API KEY</label>
+        <input type="password" class="modal-input" id="openrouterKey" placeholder="sk-or-v1-..." />
+
+        <label class="modal-label">GEMINI API KEY (OPTIONAL)</label>
+        <input type="password" class="modal-input" id="geminiKey" placeholder="AIzaSy..." />
+
+        <button class="modal-btn" onclick="saveApiKey()">Save & Connect API</button>
+        <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- General Settings Modal -->
     <div class="modal" id="settingsModal" style="display:none;">
       <div class="modal-card">
-        <div class="modal-title">⚙️ Dista AI Configuration</div>
+        <div class="modal-title">⚙️ Full Settings</div>
         
-        <label class="modal-label">REAL GMAIL ADDRESS</label>
+        <label class="modal-label">GMAIL ADDRESS</label>
         <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
         
         <label class="modal-label">GMAIL 16-CHAR APP PASSWORD</label>
         <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
 
-        <label class="modal-label">OPENROUTER API KEY (OPTIONAL)</label>
-        <input type="password" class="modal-input" id="openrouterKey" placeholder="sk-or-v1-..." />
-
         <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
-        <button class="modal-btn" style="background:#282B3D;margin-top:8px" onclick="closeSettingsModal()">Close</button>
+        <button class="modal-btn" style="background:#282B3D" onclick="closeSettingsModal()">Close</button>
       </div>
     </div>
 
@@ -234,6 +275,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <script>
     let isListening = false;
     let isSpeaking = false;
+
+    // Load saved API keys on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('dista_openrouter_key');
+      if (savedKey) {
+        document.getElementById('openrouterKey').value = savedKey;
+        document.getElementById('badgeAi').innerText = '🔑 OpenRouter API Active';
+        document.getElementById('badgeAi').className = 'badge active';
+        document.getElementById('apiBanner').style.display = 'none';
+        fetch('/api/openrouter_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: savedKey })
+        });
+      }
+    });
 
     // Build 32 Waveform Bars
     const waveContainer = document.getElementById('waveform');
@@ -269,7 +326,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        // Clean speech text
         const cleanText = text.replace(/[*#_`]/g, '').substring(0, 300);
         const utter = new SpeechSynthesisUtterance(cleanText);
         utter.rate = 1.05;
@@ -298,13 +354,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
+    function openApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'flex'; }
+    function closeApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'none'; }
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    async function saveApiKey() {
+      const key = document.getElementById('openrouterKey').value.trim();
+      if (!key) { alert("Please enter your API Key"); return; }
+
+      localStorage.setItem('dista_openrouter_key', key);
+      await fetch('/api/openrouter_config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: key })
+      });
+
+      document.getElementById('badgeAi').innerText = '🔑 API Connected';
+      document.getElementById('badgeAi').className = 'badge active';
+      document.getElementById('apiBanner').style.display = 'none';
+      closeApiKeyModal();
+      alert("API Key saved! Dista AI is now supercharged with your API.");
+    }
 
     async function saveSettings() {
       const addr = document.getElementById('gmailAddr').value.trim();
       const pass = document.getElementById('gmailPass').value.trim();
-      const key = document.getElementById('openrouterKey').value.trim();
 
       if (addr && pass) {
         await fetch('/api/gmail_config', {
@@ -314,14 +389,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         document.getElementById('badgeGmail').className = 'badge active';
         document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
-      }
-
-      if (key) {
-        await fetch('/api/openrouter_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: key })
-        });
       }
 
       closeSettingsModal();
@@ -483,7 +550,7 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'message': 'OpenRouter key configured!'}).encode('utf-8'))
+                self.wfile.write(json.dumps({'success': True, 'message': 'API key configured!'}).encode('utf-8'))
             except Exception as e:
                 self.send_response(500)
                 self.end_headers()

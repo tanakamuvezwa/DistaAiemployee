@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QTabWidget, QFrame,
-    QGridLayout, QListWidget, QListWidgetItem, QStackedWidget
+    QGridLayout, QListWidget, QListWidgetItem, QStackedWidget, QInputDialog
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QFont
@@ -62,12 +62,19 @@ class DistaApp(QMainWindow):
         brand_layout.addWidget(lbl_ai)
         brand_layout.addStretch()
 
+        btn_key = QPushButton("🔑")
+        btn_key.setFixedSize(32, 32)
+        btn_key.setStyleSheet("background:#1A1C28; border:1px solid #FF6B00; border-radius:16px; font-size:14px; color:#FF6B00;")
+        btn_key.setToolTip("Add API Key")
+        btn_key.clicked.connect(self._open_api_key_dialog)
+
         btn_user = QPushButton("👤")
         btn_user.setFixedSize(32, 32)
         btn_user.setStyleSheet("background:#1A1C28; border:1px solid #282B3D; border-radius:16px; font-size:14px;")
 
         header_layout.addWidget(btn_menu)
         header_layout.addLayout(brand_layout)
+        header_layout.addWidget(btn_key)
         header_layout.addWidget(btn_user)
         main_layout.addLayout(header_layout)
 
@@ -192,6 +199,15 @@ class DistaApp(QMainWindow):
         self.chat_list.addItem(item)
 
     # ── LOGIC & HANDLERS ──────────────────────────────────────────────
+
+    def _open_api_key_dialog(self):
+        key, ok = QInputDialog.getText(self, "API Key Settings", "Enter your OpenRouter or Gemini API Key:")
+        if ok and key.strip():
+            self.brain.openrouter_key = key.strip()
+            os.environ["OPENROUTER_API_KEY"] = key.strip()
+            msg = "API Key saved! Dista AI is now supercharged."
+            self.lbl_greeting.setText(msg)
+            self.speak(msg)
 
     def _speak_greeting(self):
         text = "Hello! I'm Dista. How can I assist you today?"
