@@ -431,63 +431,29 @@
 
       resEl.className = 'test-result';
       resEl.innerText = "⏳ Running live API diagnostic ping...";
-      const startT = Date.now();
 
       try {
-        let url = "";
-        let headers = {};
-        let body = {};
-
-        if (provider === 'nvidia') {
-          url = "https://integrate.api.nvidia.com/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "meta/llama-3.3-70b-instruct", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'openai') {
-          url = "https://api.openai.com/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'groq') {
-          url = "https://api.groq.com/openai/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'deepseek') {
-          url = "https://api.deepseek.com/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'kimi') {
-          url = "https://api.moonshot.cn/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "moonshot-v1-8k", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'openrouter') {
-          url = "https://openrouter.ai/api/v1/chat/completions";
-          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
-          body = JSON.stringify({ model: "openrouter/auto", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
-        } else if (provider === 'gemini') {
-          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + keyVal;
-          headers = { "Content-Type": "application/json" };
-          body = JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] });
+        const resp = await fetch('/api/test_key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: provider, key: keyVal })
+        });
+        
+        if (!resp.ok) {
+          throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
         }
 
-        const resp = await fetch(url, { method: 'POST', headers: headers, body: body });
-        const latency = Date.now() - startT;
-
-        if (resp.ok) {
-          const data = await resp.json();
-          let reply = "Key verified active!";
-          if (data.choices && data.choices[0] && data.choices[0].message) {
-            reply = data.choices[0].message.content;
-          } else if (data.candidates && data.candidates[0]) {
-            reply = data.candidates[0].content.parts[0].text;
-          }
+        const data = await resp.json();
+        if (data.success) {
           resEl.className = 'test-result success';
-          resEl.innerText = `✅ LIVE & ACTIVE! (${latency}ms) Response: "${reply.trim()}"`;
+          resEl.innerText = `✅ LIVE & ACTIVE! (${data.latency_ms}ms) Response: "${data.reply}"`;
         } else {
           resEl.className = 'test-result error';
-          resEl.innerText = `❌ Key Error: HTTP ${resp.status} ${resp.statusText}. Please verify key.`;
+          resEl.innerText = `❌ Key Error: ${data.error}`;
         }
       } catch (e) {
         resEl.className = 'test-result error';
-        resEl.innerText = `❌ Diagnostic Notice: ${e.message}`;
+        resEl.innerText = `❌ API Diagnostic Error: ${e.message}`;
       }
     }
 
