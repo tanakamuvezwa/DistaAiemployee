@@ -45,7 +45,7 @@ class DistaBrain:
             "nvidia": os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY),
             "openrouter": os.environ.get("OPENROUTER_API_KEY", ""),
             "kimi": os.environ.get("KIMI_API_KEY", ""),
-            "openai": os.environ.get("OPENAI_API_KEY", ""),
+            "openai": os.environ.get("OPENAI_API_KEY", "sk-HQ9ebkG6taky3plquC4ToNCRXSr5Z4oR6zjF73f8HAiqO7wX"),
             "gemini": os.environ.get("GEMINI_API_KEY", ""),
             "claude": os.environ.get("CLAUDE_API_KEY", ""),
             "deepseek": os.environ.get("DEEPSEEK_API_KEY", ""),
