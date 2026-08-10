@@ -12,547 +12,107 @@ from dista_db import db_engine
 
 brain = DistaBrain()
 
-HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISTA AI — Local Workspace Assistant</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #0F1017; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    
-    /* Phone Shell Container */
-    .app-card {
-      width: 100%;
-      max-width: 450px;
-      height: 890px;
-      background-color: #0F1017;
-      border: 2px solid #282B3D;
-      border-radius: 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 45px rgba(255,107,0,0.2);
-      display: flex;
-      flex-direction: column;
-      padding: 24px 20px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
-    .brand span { color: #FF6B00; }
-    .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
-    .header-btn:hover { border-color: #FF6B00; color: #FFF; }
-
-    /* Badges */
-    .badge-bar { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; cursor: pointer; }
-    .badge.active { border-color: #FF6B00; color: #FF6B00; }
-
-    /* API Key Banner on Homescreen */
-    .api-banner {
-      background: linear-gradient(90deg, rgba(255,107,0,0.15), rgba(255,136,0,0.05));
-      border: 1px solid #FF6B00;
-      border-radius: 14px;
-      padding: 8px 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .api-banner:hover { background: linear-gradient(90deg, rgba(255,107,0,0.25), rgba(255,136,0,0.1)); }
-    .api-banner-text { font-size: 11px; font-weight: 700; color: #FFF; }
-    .api-banner-btn { background: #FF6B00; color: #FFF; border: none; border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 800; }
-
-    /* Center Avatar Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 8px; }
-    .avatar-ring {
-      width: 125px; height: 125px; border-radius: 50%;
-      border: 2.5px solid #FF6B00;
-      box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
-      display: flex; align-items: center; justify-content: center;
-      position: relative; transition: all 0.3s;
-    }
-    .avatar-ring.listening { border-color: #00E5FF; box-shadow: 0 0 30px rgba(0,229,255,0.6); }
-    .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
-
-    .pixel-avatar {
-      width: 86px; height: 86px;
-      background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
-      clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
-      position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .pixel-eyes { display: flex; gap: 18px; margin-top: -8px; }
-    .pixel-eye { width: 11px; height: 11px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
-    .pixel-eye.listening { background: #00E5FF; box-shadow: 0 0 10px #00E5FF; }
-    .pixel-mouth { width: 18px; height: 4px; background: #282C3A; margin-top: 10px; border-radius: 2px; }
-    .pixel-mouth.speaking { background: #FF6B00; height: 8px; animation: mouthTalk 0.2s infinite alternate; }
-
-    @keyframes mouthTalk { from { height: 3px; } to { height: 9px; } }
-
-    .greeting { font-size: 12.5px; font-weight: 600; color: #E2E8F0; max-width: 340px; line-height: 1.4; min-height: 36px; }
-
-    /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 26px; }
-    .wave-bar { width: 4px; height: 8px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
-    .wave-bar.white { background: #FFFFFF; }
-
-    /* Action Shortcut Bar */
-    .quick-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none; }
-    .quick-actions::-webkit-scrollbar { display: none; }
-    .action-chip {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 20px;
-      padding: 6px 14px; font-size: 11px; font-weight: 600; color: #CBD5E1;
-      white-space: nowrap; cursor: pointer; transition: all 0.2s;
-    }
-    .action-chip:hover { border-color: #FF6B00; color: #FFF; background: #222536; }
-    .action-chip.key-chip { background: rgba(255,107,0,0.15); border-color: #FF6B00; color: #FF6B00; font-weight: 800; }
-
-    /* Tool Grid (2x2) */
-    .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
-    .tool-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 12px;
-      cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .tool-card:hover { border-color: #FF6B00; background: #222536; transform: translateY(-2px); }
-    .card-hdr { display: flex; align-items: center; gap: 8px; }
-    .card-icon { font-size: 18px; }
-    .card-title { font-size: 13px; font-weight: 700; color: #FFF; }
-    .card-sub { font-size: 11px; color: #8C94A8; line-height: 1.3; margin-top: 4px; }
-
-    /* Chat Stream View */
-    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
-    .msg-bubble { padding: 12px 15px; border-radius: 14px; font-size: 13px; max-width: 92%; line-height: 1.5; animation: fadeIn 0.2s ease; white-space: pre-wrap; word-break: break-word; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
-    .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
-
-    /* Modal Windows */
-    .modal {
-      position: absolute; inset: 0; background: rgba(15,16,23,0.96); backdrop-filter: blur(10px);
-      display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
-    }
-    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 90%; overflow-y: auto; }
-    .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
-    .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 12px; font-size: 13px; }
-    .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
-
-    /* Bottom Input Pill Bar */
-    .input-bar {
-      background: #1A1C28; border: 1px solid #2A2D40; border-radius: 28px;
-      padding: 6px 8px 6px 16px; display: flex; align-items: center; gap: 10px; margin-top: auto;
-    }
-    .input-bar input {
-      flex: 1; background: transparent; border: none; outline: none; color: #FFF; font-size: 13px;
-    }
-    .mic-btn {
-      width: 40px; height: 40px; border-radius: 20px; background: #FF6B00; border: none;
-      color: #FFF; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 15px rgba(255,107,0,0.5); transition: all 0.2s;
-    }
-    .mic-btn.active { background: #00E5FF; box-shadow: 0 0 20px rgba(0,229,255,0.7); color: #0F1017; }
-    .mic-btn:hover { transform: scale(1.05); }
-  </style>
-</head>
-<body>
-  <div class="app-card">
-    <!-- Header -->
-    <div class="header">
-      <div class="header-btn" onclick="toggleView()" title="Toggle Grid / Chat">≡</div>
-      <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn" onclick="openApiKeyModal()" title="API Key Settings">🔑</div>
-    </div>
-
-    <!-- Status Badges -->
-    <div class="badge-bar">
-      <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🔑 Add API Key</div>
-      <div class="badge" id="badgeGmail" onclick="openSettingsModal()">📧 Gmail: Off</div>
-      <div class="badge" id="badgeDb">💾 Storage Active</div>
-    </div>
-
-    <!-- Homescreen API Key Banner -->
-    <div class="api-banner" id="apiBanner" onclick="openApiKeyModal()">
-      <div class="api-banner-text">🔑 Add OpenRouter or Gemini API Key for Turbo AI</div>
-      <button class="api-banner-btn">SET KEY</button>
-    </div>
-
-    <!-- Centerpiece Avatar -->
-    <div class="avatar-box">
-      <div class="avatar-ring" id="avatarRing">
-        <div class="pixel-avatar">
-          <div class="pixel-eyes">
-            <div class="pixel-eye" id="eyeL"></div>
-            <div class="pixel-eye" id="eyeR"></div>
-          </div>
-          <div class="pixel-mouth" id="pixelMouth"></div>
-        </div>
-      </div>
-      <div class="greeting" id="greetingText">Hello! I'm Dista AI. Ask me anything or state your command.</div>
-      
-      <!-- Waveform -->
-      <div class="waveform" id="waveform"></div>
-    </div>
-
-    <!-- Quick Action Chips -->
-    <div class="quick-actions">
-      <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Add API Key</div>
-      <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
-      <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
-      <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
-      <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
-      <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
-    </div>
-
-    <!-- Main View (Tool Grid / Chat) -->
-    <div class="tool-grid" id="toolGrid">
-      <div class="tool-card" onclick="sendCmd('summarize emails')">
-        <div class="card-hdr"><span class="card-icon">✉️</span><span class="card-title">Email</span></div>
-        <div class="card-sub">Check Emails<br/><b style="color:#FF6B00">Unread: 3</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('read docs')">
-        <div class="card-hdr"><span class="card-icon">📄</span><span class="card-title">Docs</span></div>
-        <div class="card-sub">Open Documents<br/><b style="color:#FF6B00">Recent: 5</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('check messages')">
-        <div class="card-hdr"><span class="card-icon">💬</span><span class="card-title">Messages</span></div>
-        <div class="card-sub">Send Messages<br/><b style="color:#FF6B00">Notifications: 2</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('system')">
-        <div class="card-hdr"><span class="card-icon">💻</span><span class="card-title">System</span></div>
-        <div class="card-sub">CPU & Memory<br/><b style="color:#FF6B00">Status: Peak</b></div>
-      </div>
-    </div>
-
-    <div class="chat-stream" id="chatStream" style="display:none;"></div>
-
-    <!-- API Key Settings Modal (Homescreen Feature) -->
-    <div class="modal" id="apiKeyModal" style="display:none;">
-      <div class="modal-card">
-        <div class="modal-title">🔑 Add Your AI API Key</div>
-        <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
-          Enter your <b>OpenRouter API Key</b> or <b>Google Gemini API Key</b> below. Dista AI will use your key for instant turbo LLM answers.
-        </p>
-
-        <label class="modal-label">OPENROUTER API KEY</label>
-        <input type="password" class="modal-input" id="openrouterKey" placeholder="sk-or-v1-..." />
-
-        <label class="modal-label">GEMINI API KEY (OPTIONAL)</label>
-        <input type="password" class="modal-input" id="geminiKey" placeholder="AIzaSy..." />
-
-        <button class="modal-btn" onclick="saveApiKey()">Save & Connect API</button>
-        <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
-      </div>
-    </div>
-
-    <!-- General Settings Modal -->
-    <div class="modal" id="settingsModal" style="display:none;">
-      <div class="modal-card">
-        <div class="modal-title">⚙️ Full Settings</div>
-        
-        <label class="modal-label">GMAIL ADDRESS</label>
-        <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
-        
-        <label class="modal-label">GMAIL 16-CHAR APP PASSWORD</label>
-        <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
-
-        <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
-        <button class="modal-btn" style="background:#282B3D" onclick="closeSettingsModal()">Close</button>
-      </div>
-    </div>
-
-    <!-- Bottom Input Pill Bar -->
-    <div class="input-bar">
-      <input type="text" id="userInput" placeholder="Ask Dista anything or speak..." onkeydown="if(event.key==='Enter') sendInput()" />
-      <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Toggle Voice Recognition">🎤</button>
-    </div>
-  </div>
-
-  <script>
-    let isListening = false;
-    let isSpeaking = false;
-
-    // Load saved API keys on startup
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedKey = localStorage.getItem('dista_openrouter_key');
-      if (savedKey) {
-        document.getElementById('openrouterKey').value = savedKey;
-        document.getElementById('badgeAi').innerText = '🔑 OpenRouter API Active';
-        document.getElementById('badgeAi').className = 'badge active';
-        document.getElementById('apiBanner').style.display = 'none';
-        fetch('/api/openrouter_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: savedKey })
-        });
-      }
-    });
-
-    // Build 32 Waveform Bars
-    const waveContainer = document.getElementById('waveform');
-    for (let i = 0; i < 32; i++) {
-      const bar = document.createElement('div');
-      bar.className = 'wave-bar' + (i % 3 === 0 ? ' white' : '');
-      waveContainer.appendChild(bar);
-    }
-
-    function animateWaveform() {
-      const bars = document.querySelectorAll('.wave-bar');
-      bars.forEach((bar, i) => {
-        const h = isSpeaking || isListening
-          ? Math.floor(Math.random() * 24 + 6)
-          : Math.floor(Math.sin(Date.now() * 0.005 + i * 0.5) * 3 + 6);
-        bar.style.height = h + 'px';
-      });
-    }
-    setInterval(animateWaveform, 80);
-
-    function updateAvatarState(state) {
-      const ring = document.getElementById('avatarRing');
-      const mouth = document.getElementById('pixelMouth');
-      const eyeL = document.getElementById('eyeL');
-      const eyeR = document.getElementById('eyeR');
-
-      ring.className = 'avatar-ring ' + state;
-      eyeL.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
-      eyeR.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
-      mouth.className = 'pixel-mouth ' + (state === 'speaking' ? 'speaking' : '');
-    }
-
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const cleanText = text.replace(/[*#_`]/g, '').substring(0, 300);
-        const utter = new SpeechSynthesisUtterance(cleanText);
-        utter.rate = 1.05;
-        utter.pitch = 1.0;
-        utter.onstart = () => {
-          isSpeaking = true;
-          updateAvatarState('speaking');
-        };
-        utter.onend = () => {
-          isSpeaking = false;
-          updateAvatarState(isListening ? 'listening' : '');
-        };
-        window.speechSynthesis.speak(utter);
-      }
-    }
-
-    function toggleView() {
-      const grid = document.getElementById('toolGrid');
-      const chat = document.getElementById('chatStream');
-      if (grid.style.display === 'none') {
-        grid.style.display = 'grid';
-        chat.style.display = 'none';
-      } else {
-        grid.style.display = 'none';
-        chat.style.display = 'flex';
-      }
-    }
-
-    function openApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'flex'; }
-    function closeApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'none'; }
-    function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
-    function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
-
-    async function saveApiKey() {
-      const key = document.getElementById('openrouterKey').value.trim();
-      if (!key) { alert("Please enter your API Key"); return; }
-
-      localStorage.setItem('dista_openrouter_key', key);
-      await fetch('/api/openrouter_config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: key })
-      });
-
-      document.getElementById('badgeAi').innerText = '🔑 API Connected';
-      document.getElementById('badgeAi').className = 'badge active';
-      document.getElementById('apiBanner').style.display = 'none';
-      closeApiKeyModal();
-      alert("API Key saved! Dista AI is now supercharged with your API.");
-    }
-
-    async function saveSettings() {
-      const addr = document.getElementById('gmailAddr').value.trim();
-      const pass = document.getElementById('gmailPass').value.trim();
-
-      if (addr && pass) {
-        await fetch('/api/gmail_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: addr, password: pass })
-        });
-        document.getElementById('badgeGmail').className = 'badge active';
-        document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
-      }
-
-      closeSettingsModal();
-      alert("Settings saved successfully!");
-    }
-
-    async function sendCmd(text) {
-      document.getElementById('userInput').value = text;
-      sendInput();
-    }
-
-    async function sendInput() {
-      const input = document.getElementById('userInput');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      const chat = document.getElementById('chatStream');
-      const grid = document.getElementById('toolGrid');
-      grid.style.display = 'none';
-      chat.style.display = 'flex';
-
-      chat.innerHTML += `<div class="msg-bubble msg-user">${text}</div>`;
-      chat.scrollTop = chat.scrollHeight;
-
-      document.getElementById('greetingText').innerText = "Dista AI is thinking...";
-      updateAvatarState('speaking');
-
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-        const data = await res.json();
-        const reply = data.reply || "Done.";
-
-        document.getElementById('greetingText').innerText = reply.substring(0, 120) + (reply.length > 120 ? '...' : '');
-        chat.innerHTML += `<div class="msg-bubble msg-dista">${reply}</div>`;
-        chat.scrollTop = chat.scrollHeight;
-
-        speakText(reply);
-      } catch (e) {
-        document.getElementById('greetingText').innerText = "Error contacting Dista AI Python backend.";
-        updateAvatarState('');
-      }
-    }
-
-    function toggleVoice() {
-      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-        alert("Web Speech API not supported in this browser. Please use Chrome/Edge or type below.");
-        return;
-      }
-
-      const micBtn = document.getElementById('micBtn');
-      if (isListening) {
-        isListening = false;
-        micBtn.classList.remove('active');
-        updateAvatarState('');
-        document.getElementById('greetingText').innerText = "Voice recognition paused.";
-        return;
-      }
-
-      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const rec = new Speech();
-      rec.continuous = false;
-      rec.interimResults = false;
-
-      rec.onstart = () => {
-        isListening = true;
-        micBtn.classList.add('active');
-        updateAvatarState('listening');
-        document.getElementById('greetingText').innerText = "Listening... State your command.";
-      };
-
-      rec.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
-        document.getElementById('userInput').value = transcript;
-        sendInput();
-      };
-
-      rec.onerror = (e) => {
-        isListening = false;
-        micBtn.classList.remove('active');
-        updateAvatarState('');
-        document.getElementById('greetingText').innerText = "Voice input stopped. Click mic to speak again.";
-      };
-
-      rec.onend = () => {
-        isListening = false;
-        micBtn.classList.remove('active');
-        if (!isSpeaking) updateAvatarState('');
-      };
-
-      rec.start();
-    }
-
-    // Speak initial greeting on load
-    setTimeout(() => speakText("Hello! I'm Dista AI. Ask me anything or state your command."), 500);
-  </script>
-</body>
-</html>
-"""
-
 class DistaHTTPHandler(BaseHTTPRequestHandler):
+    def _send_cors_headers(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self._send_cors_headers()
+        self.end_headers()
+
     def do_GET(self):
         if self.path.startswith('/api/'):
-            self.send_response(400)
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
             self.end_headers()
+            self.wfile.write(json.dumps({"status": "online", "use_mongo": db_engine.use_mongo}).encode('utf-8'))
             return
         
+        # Serve index.html or public assets
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
-        self.wfile.write(HTML_TEMPLATE.encode('utf-8'))
+        
+        public_html = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "index.html")
+        if os.path.exists(public_html):
+            with open(public_html, 'r', encoding='utf-8') as f:
+                self.wfile.write(f.read().encode('utf-8'))
+        else:
+            self.wfile.write(b"<h1>DISTA AI Backend Server</h1>")
 
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
-        body_data = self.rfile.read(content_length).decode('utf-8')
+        body_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
         
+        try:
+            payload = json.loads(body_data)
+        except Exception:
+            payload = {}
+
         if self.path == '/api/chat':
             try:
-                payload = json.loads(body_data)
                 user_msg = payload.get('message', '')
                 result = brain.process_input(user_msg)
-                
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result).encode('utf-8'))
             except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(json.dumps({'reply': f"Error: {str(e)}"}).encode('utf-8'))
+                result = {"reply": f"Dista AI Engine: {str(e)}", "action": None, "data": None}
+                
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(result).encode('utf-8'))
 
         elif self.path == '/api/gmail_config':
             try:
-                payload = json.loads(body_data)
                 addr = payload.get('address', '')
                 passwd = payload.get('password', '')
                 gmail_service.set_credentials(addr, passwd)
                 
                 self.send_response(200)
+                self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': True, 'message': 'Gmail credentials configured!'}).encode('utf-8'))
             except Exception as e:
                 self.send_response(500)
+                self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
 
         elif self.path == '/api/openrouter_config':
             try:
-                payload = json.loads(body_data)
                 key = payload.get('key', '')
                 brain.openrouter_key = key
                 os.environ["OPENROUTER_API_KEY"] = key
                 
                 self.send_response(200)
+                self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'message': 'API key configured!'}).encode('utf-8'))
+                self.wfile.write(json.dumps({'success': True, 'message': 'API Key configured!'}).encode('utf-8'))
             except Exception as e:
                 self.send_response(500)
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
+
+        elif self.path == '/api/mongodb_config':
+            try:
+                uri = payload.get('uri', '')
+                res = db_engine.connect_mongodb(uri)
+                
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self._send_cors_headers()
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
 
@@ -562,7 +122,6 @@ def run_web_app():
     httpd = HTTPServer(server_address, DistaHTTPHandler)
     print(f"\n[DISTA AI] Web Server is LIVE at: http://localhost:{port}\n")
     
-    # Auto-open browser
     import webbrowser
     try:
         webbrowser.open(f"http://localhost:{port}")
