@@ -9,6 +9,10 @@ from dista_tools import EmailTool, DocsTool, MessagesTool, WORKSPACE_DIR
 from dista_gmail import gmail_service
 from dista_db import db_engine
 
+# Set User's Verified NVIDIA NIM API Key as default
+DEFAULT_NVIDIA_KEY = "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"
+os.environ["NVIDIA_API_KEY"] = os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY)
+
 # Try G4F Engine
 try:
     import g4f
@@ -26,18 +30,18 @@ except ImportError:
 
 class DistaBrain:
     """
-    Enterprise-Grade Multi-Provider AI Engine with Robust 401/403/429 Exception Failover.
+    Enterprise-Grade Multi-Provider AI Engine powered by NVIDIA NIM (Llama 3.3 70B).
     Supports NVIDIA NIM, Kimi/Moonshot, OpenAI, Anthropic Claude, Google Gemini,
     DeepSeek, Groq, OpenRouter, and G4F Zero-Config Free Models.
     """
 
     def __init__(self):
         self.name = "Dista AI"
-        self.active_provider = os.environ.get("ACTIVE_AI_PROVIDER", "auto")
+        self.active_provider = os.environ.get("ACTIVE_AI_PROVIDER", "nvidia")
         
         # Provider API Keys dictionary
         self.api_keys = {
-            "nvidia": os.environ.get("NVIDIA_API_KEY", ""),
+            "nvidia": os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY),
             "kimi": os.environ.get("KIMI_API_KEY", ""),
             "openai": os.environ.get("OPENAI_API_KEY", ""),
             "gemini": os.environ.get("GEMINI_API_KEY", ""),
@@ -54,7 +58,7 @@ class DistaBrain:
         os.environ[env_var] = key.strip()
 
     def _call_nvidia(self, query: str, sys_msg: str) -> str:
-        key = self.api_keys.get("nvidia") or os.environ.get("NVIDIA_API_KEY")
+        key = self.api_keys.get("nvidia") or os.environ.get("NVIDIA_API_KEY") or DEFAULT_NVIDIA_KEY
         if not key: return ""
         try:
             url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -198,18 +202,19 @@ class DistaBrain:
 
     def _call_ai_engine(self, user_query: str, system_prompt: str = "") -> str:
         sys_msg = system_prompt or (
-            "You are Dista AI, an executive workspace assistant. "
+            "You are Dista AI, an executive workspace assistant powered by NVIDIA NIM Llama 3.3. "
             "Provide helpful, intelligent, sharp, and concise conversational responses. "
             "Keep formatting clean and readable."
         )
 
         provider = self.active_provider.lower().strip()
 
-        # Route to specific provider if selected & key available
-        if provider == "nvidia":
+        # 1. Try primary selected provider
+        if provider == "nvidia" or provider == "auto":
             res = self._call_nvidia(user_query, sys_msg)
-            if res: return f"[NVIDIA NIM] {res}"
-        elif provider == "kimi":
+            if res: return res
+
+        if provider == "kimi":
             res = self._call_kimi(user_query, sys_msg)
             if res: return f"[Kimi AI] {res}"
         elif provider == "openai":
@@ -228,11 +233,11 @@ class DistaBrain:
             res = self._call_openrouter(user_query, sys_msg)
             if res: return f"[OpenRouter] {res}"
 
-        # Automatic Provider Cascade Fallback
+        # 2. Cascade Fallback Engine
         for call_fn, label in [
+            (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
             (lambda: self._call_openrouter(user_query, sys_msg), "OpenRouter"),
             (lambda: self._call_gemini(user_query, sys_msg), "Gemini"),
-            (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
             (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
             (lambda: self._call_openai(user_query, sys_msg), "OpenAI"),
             (lambda: self._call_deepseek(user_query, sys_msg), "DeepSeek"),
@@ -302,9 +307,9 @@ class DistaBrain:
             if psutil:
                 cpu_v = psutil.cpu_percent(interval=0.1)
                 mem_v = psutil.virtual_memory().percent
-                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type} | AI Provider: {self.active_provider.upper()}. All systems nominal."
+                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3). All systems nominal."
             else:
-                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type} | AI Provider: {self.active_provider.upper()}. Engine nominal."
+                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3). Engine nominal."
             return {"reply": reply, "action": "show_system", "data": None}
 
         # ── 5. MATH & CALCULATOR ───────────────────────────────────────
