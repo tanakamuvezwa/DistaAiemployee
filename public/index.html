@@ -113,6 +113,7 @@
     /* Chat Stream View */
     .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
     .msg-bubble { padding: 12px 15px; border-radius: 14px; font-size: 13px; max-width: 92%; line-height: 1.5; animation: fadeIn 0.2s ease; white-space: pre-wrap; word-break: break-word; }
+    .msg-bubble a { color: #00E5FF; text-decoration: underline; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
@@ -127,7 +128,7 @@
     .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
     .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 10px; font-size: 12.5px; }
     .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
-    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11px; margin-bottom: 12px; display: inline-block; cursor: pointer; }
+    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11px; margin-bottom: 8px; display: inline-block; cursor: pointer; }
 
     /* Bottom Input Pill Bar */
     .input-bar {
@@ -227,34 +228,41 @@
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
 
-    <!-- Multi-Provider API Keys Setup Modal -->
+    <!-- Multi-Provider API Keys Setup Modal with Direct Links -->
     <div class="modal" id="apiKeyModal" style="display:none;">
       <div class="modal-card">
         <div class="modal-title">🔑 Multi-Provider AI API Keys</div>
         <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
-          Configure API keys for <b>NVIDIA NIM</b>, <b>Kimi AI</b>, <b>DeepSeek</b>, <b>Groq</b>, <b>OpenAI</b>, <b>Gemini</b>, <b>Claude</b>, or <b>OpenRouter</b>.
+          Configure API keys for any provider. Click the link to get your free key:
         </p>
 
         <label class="modal-label">NVIDIA NIM API KEY</label>
         <input type="password" class="modal-input" id="keyNvidia" placeholder="nvapi-..." />
+        <a href="https://build.nvidia.com/" target="_blank" class="link-btn">🔗 Get Free NVIDIA NIM Key</a>
 
         <label class="modal-label">KIMI AI / MOONSHOT KEY</label>
         <input type="password" class="modal-input" id="keyKimi" placeholder="sk-..." />
+        <a href="https://platform.moonshot.cn/" target="_blank" class="link-btn">🔗 Get Kimi / Moonshot API Key</a>
 
         <label class="modal-label">DEEPSEEK API KEY</label>
         <input type="password" class="modal-input" id="keyDeepseek" placeholder="sk-..." />
+        <a href="https://platform.deepseek.com/" target="_blank" class="link-btn">🔗 Get DeepSeek API Key</a>
 
         <label class="modal-label">GROQ API KEY</label>
         <input type="password" class="modal-input" id="keyGroq" placeholder="gsk_..." />
+        <a href="https://console.groq.com/keys" target="_blank" class="link-btn">🔗 Get Groq Ultra-Fast API Key</a>
 
         <label class="modal-label">OPENAI API KEY</label>
         <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." />
+        <a href="https://platform.openai.com/api-keys" target="_blank" class="link-btn">🔗 Get OpenAI Key</a>
 
         <label class="modal-label">GOOGLE GEMINI API KEY</label>
         <input type="password" class="modal-input" id="keyGemini" placeholder="AIzaSy..." />
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-btn">🔗 Get Google Gemini Key</a>
 
         <label class="modal-label">OPENROUTER API KEY</label>
         <input type="password" class="modal-input" id="keyOpenrouter" placeholder="sk-or-v1-..." />
+        <a href="https://openrouter.ai/keys" target="_blank" class="link-btn">🔗 Get OpenRouter Universal Key</a>
 
         <button class="modal-btn" onclick="saveAllApiKeys()">Save All API Keys</button>
         <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
@@ -272,10 +280,11 @@
         <label class="modal-label">GMAIL 16-CHAR APP PASSWORD</label>
         <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
         
-        <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">🔗 Click here to generate a Google App Password</a>
+        <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">🔗 Generate Google App Password Direct Link</a>
 
         <label class="modal-label" style="margin-top:10px">MONGODB ATLAS CONNECTION URI</label>
         <input type="password" class="modal-input" id="mongoUri" placeholder="mongodb+srv://user:password@cluster.mongodb.net/dista_db" />
+        <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" class="link-btn">🔗 Get Free MongoDB Atlas Cloud Database Link</a>
 
         <button class="modal-btn" onclick="saveSettings()">Save & Connect Cloud</button>
         <button class="modal-btn" style="background:#282B3D" onclick="closeSettingsModal()">Close</button>
@@ -543,7 +552,3 @@
   </script>
 </body>
 </html>
-"""
-
-class DistaHTTPHandler(BaseHTTPRequestHandler):
-    pass

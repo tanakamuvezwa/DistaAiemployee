@@ -2,19 +2,25 @@ import os
 import sqlite3
 from datetime import datetime
 
-# Try loading PyMongo for MongoDB integration
+# Detect if running in Vercel or read-only serverless environment
+IS_SERVERLESS = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+if IS_SERVERLESS:
+    DB_PATH = "/tmp/dista_local_data.db"
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "workspace", "dista_local_data.db")
+
+# Try loading PyMongo for MongoDB Cloud integration
 try:
     import pymongo
     MONGO_AVAILABLE = True
 except ImportError:
     MONGO_AVAILABLE = False
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "workspace", "dista_local_data.db")
-
 class DistaDatabase:
     """
-    Unified MongoDB Cloud & SQLite Local Persistence Layer
-    Supports MongoDB Atlas (`mongodb+srv://...`) and local SQLite fallback.
+    Unified MongoDB Cloud & SQLite Persistence Layer
+    Handles Vercel serverless read-only filesystems seamlessly with /tmp and memory fallback.
     """
 
     def __init__(self):
@@ -27,7 +33,6 @@ class DistaDatabase:
             self.connect_mongodb(self.mongo_uri)
 
         if not self.use_mongo:
-            print("[Database] Using SQLite local persistence.")
             self._init_sqlite()
 
     def connect_mongodb(self, uri: str) -> dict:
@@ -43,37 +48,46 @@ class DistaDatabase:
             self.use_mongo = True
             self.mongo_uri = uri
             os.environ["MONGO_URI"] = uri
-            print(f"[Database] Successfully connected to MongoDB Cloud!")
             return {"success": True, "message": "Successfully connected to MongoDB Cloud Database!"}
         except Exception as e:
             self.use_mongo = False
             return {"success": False, "message": f"MongoDB Connection Error: {str(e)}"}
 
+    def _get_connection(self):
+        """Safely connect to SQLite database or fallback to memory on read-only systems"""
+        try:
+            os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+            return sqlite3.connect(DB_PATH)
+        except Exception:
+            return sqlite3.connect(":memory:")
+
     def _init_sqlite(self):
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS emails (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT,
-                subject TEXT,
-                body TEXT,
-                priority TEXT,
-                timestamp TEXT,
-                is_read INTEGER DEFAULT 0
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS chat_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender TEXT,
-                message TEXT,
-                timestamp TEXT
-            )
-        """)
-        conn.commit()
-        conn.close()
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS emails (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender TEXT,
+                    subject TEXT,
+                    body TEXT,
+                    priority TEXT,
+                    timestamp TEXT,
+                    is_read INTEGER DEFAULT 0
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS chat_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sender TEXT,
+                    message TEXT,
+                    timestamp TEXT
+                )
+            """)
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[SQLite Init Notice]: {e}")
 
     def save_email(self, sender: str, subject: str, body: str, priority: str = "INFO", is_read: int = 0):
         timestamp = datetime.now().strftime("%Y-%m-%d %I:%M %p")
@@ -91,14 +105,17 @@ class DistaDatabase:
             except Exception:
                 pass
         
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (sender, subject, body, priority, timestamp, is_read))
-        conn.commit()
-        conn.close()
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (sender, subject, body, priority, timestamp, is_read))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
     def get_emails(self, limit=10):
         if self.use_mongo and self.db is not None:
@@ -117,15 +134,18 @@ class DistaDatabase:
             except Exception:
                 pass
 
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("SELECT sender, subject, body, priority, timestamp FROM emails ORDER BY id DESC LIMIT ?", (limit,))
-        rows = cur.fetchall()
-        conn.close()
-        return [
-            {"sender": r[0], "subject": r[1], "body": r[2], "priority": r[3], "timestamp": r[4]}
-            for r in rows
-        ]
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT sender, subject, body, priority, timestamp FROM emails ORDER BY id DESC LIMIT ?", (limit,))
+            rows = cur.fetchall()
+            conn.close()
+            return [
+                {"sender": r[0], "subject": r[1], "body": r[2], "priority": r[3], "timestamp": r[4]}
+                for r in rows
+            ]
+        except Exception:
+            return []
 
     def save_chat(self, sender: str, message: str):
         timestamp = datetime.now().strftime("%I:%M %p")
@@ -140,10 +160,13 @@ class DistaDatabase:
             except Exception:
                 pass
 
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("INSERT INTO chat_history (sender, message, timestamp) VALUES (?, ?, ?)", (sender, message, timestamp))
-        conn.commit()
-        conn.close()
+        try:
+            conn = self._get_connection()
+            cur = conn.cursor()
+            cur.execute("INSERT INTO chat_history (sender, message, timestamp) VALUES (?, ?, ?)", (sender, message, timestamp))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
 db_engine = DistaDatabase()
