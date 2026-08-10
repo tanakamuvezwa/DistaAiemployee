@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISTA AI — Enterprise Multi-AI Assistant</title>
+  <title>DISTA AI — Enterprise Personal Assistant</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; }
     body { background-color: #0F1017; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -12,7 +12,7 @@
     .app-card {
       width: 100%;
       max-width: 460px;
-      height: 910px;
+      height: 920px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
@@ -124,11 +124,13 @@
       display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
     }
     .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 92%; overflow-y: auto; }
-    .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 8px; }
+    .modal-desc { font-size: 11px; color: #8C94A8; margin-bottom: 12px; line-height: 1.4; }
     .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 10px; font-size: 12.5px; }
+    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 8px; font-size: 12.5px; }
     .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
-    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11px; margin-bottom: 8px; display: inline-block; cursor: pointer; }
+    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11.5px; margin-bottom: 10px; display: inline-block; cursor: pointer; font-weight: 600; }
+    .guide-box { background: #0F1017; border: 1px solid #282B3D; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 11px; color: #CBD5E1; line-height: 1.5; }
 
     /* Bottom Input Pill Bar */
     .input-bar {
@@ -159,8 +161,8 @@
     <!-- Status Badges -->
     <div class="badge-bar">
       <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🧠 AI Engine Active</div>
-      <div class="badge" id="badgeGmail" onclick="openSettingsModal()">📧 Gmail: Off</div>
-      <div class="badge" id="badgeDb" onclick="openSettingsModal()">💾 Storage Active</div>
+      <div class="badge" id="badgeGmail" onclick="openGmailModal()">📧 Gmail Sign-In</div>
+      <div class="badge" id="badgeDb" onclick="openSettingsModal()">💾 Database Storage</div>
     </div>
 
     <!-- Provider Selection Bar -->
@@ -199,8 +201,9 @@
     <!-- Quick Action Chips -->
     <div class="quick-actions">
       <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Add API Keys</div>
+      <div class="action-chip" onclick="openGmailModal()">📧 Sign In to Gmail</div>
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
-      <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
+      <div class="action-chip" onclick="sendCmd('check inbox')">📥 Read Live Emails</div>
       <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
       <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
       <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
@@ -208,9 +211,9 @@
 
     <!-- Main View (Tool Grid / Chat) -->
     <div class="tool-grid" id="toolGrid">
-      <div class="tool-card" onclick="sendCmd('summarize emails')">
-        <div class="card-hdr"><span class="card-icon">✉️</span><span class="card-title">Email</span></div>
-        <div class="card-sub">Check Emails<br/><b style="color:#FF6B00">Unread: 3</b></div>
+      <div class="tool-card" onclick="openGmailModal()">
+        <div class="card-hdr"><span class="card-icon">✉️</span><span class="card-title">Gmail</span></div>
+        <div class="card-sub">Sign In to Gmail<br/><b style="color:#FF6B00">Status: Setup</b></div>
       </div>
       <div class="tool-card" onclick="sendCmd('read docs')">
         <div class="card-hdr"><span class="card-icon">📄</span><span class="card-title">Docs</span></div>
@@ -228,12 +231,41 @@
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
 
-    <!-- Multi-Provider API Keys Setup Modal with Direct Links -->
+    <!-- Dedicated Gmail Sign-In Modal -->
+    <div class="modal" id="gmailModal" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-title">📧 Connect Your Live Gmail Account</div>
+        <p class="modal-desc">
+          To let Dista AI read your live Gmail inbox and send real emails, log in below using Google's official App Password standard.
+        </p>
+
+        <div class="guide-box">
+          <b>How to Connect in 3 Easy Steps:</b><br/>
+          1. Log into your Google Account via the link below.<br/>
+          2. Generate a 16-character App Password for "Mail".<br/>
+          3. Enter your Gmail address & App Password below!
+        </div>
+
+        <a href="https://accounts.google.com/" target="_blank" class="link-btn">🔗 1. Open Google Account Login (accounts.google.com)</a><br/>
+        <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">🔑 2. Direct Link to Google App Passwords Generator</a>
+
+        <label class="modal-label" style="margin-top:8px">YOUR GMAIL ADDRESS</label>
+        <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
+
+        <label class="modal-label">GOOGLE 16-CHAR APP PASSWORD</label>
+        <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
+
+        <button class="modal-btn" onclick="saveGmailOnly()">Save & Connect Live Gmail Inbox</button>
+        <button class="modal-btn" style="background:#282B3D" onclick="closeGmailModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Multi-Provider API Keys Setup Modal -->
     <div class="modal" id="apiKeyModal" style="display:none;">
       <div class="modal-card">
         <div class="modal-title">🔑 Multi-Provider AI API Keys</div>
-        <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
-          Configure API keys for any provider. Click the link to get your free key:
+        <p class="modal-desc">
+          Configure API keys for any provider. Click the link to get your key instantly:
         </p>
 
         <label class="modal-label">NVIDIA NIM API KEY</label>
@@ -269,24 +301,16 @@
       </div>
     </div>
 
-    <!-- Full Settings & Gmail / MongoDB Modal -->
+    <!-- Full Settings & MongoDB Modal -->
     <div class="modal" id="settingsModal" style="display:none;">
       <div class="modal-card">
-        <div class="modal-title">⚙️ Gmail & Cloud MongoDB Settings</div>
+        <div class="modal-title">⚙️ Cloud Database Settings</div>
         
-        <label class="modal-label">REAL GMAIL ADDRESS</label>
-        <input type="text" class="modal-input" id="gmailAddr" placeholder="your.name@gmail.com" />
-        
-        <label class="modal-label">GMAIL 16-CHAR APP PASSWORD</label>
-        <input type="password" class="modal-input" id="gmailPass" placeholder="xxxx xxxx xxxx xxxx" />
-        
-        <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">🔗 Generate Google App Password Direct Link</a>
-
-        <label class="modal-label" style="margin-top:10px">MONGODB ATLAS CONNECTION URI</label>
+        <label class="modal-label">MONGODB ATLAS CONNECTION URI</label>
         <input type="password" class="modal-input" id="mongoUri" placeholder="mongodb+srv://user:password@cluster.mongodb.net/dista_db" />
         <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" class="link-btn">🔗 Get Free MongoDB Atlas Cloud Database Link</a>
 
-        <button class="modal-btn" onclick="saveSettings()">Save & Connect Cloud</button>
+        <button class="modal-btn" onclick="saveSettings()">Save & Connect Cloud DB</button>
         <button class="modal-btn" style="background:#282B3D" onclick="closeSettingsModal()">Close</button>
       </div>
     </div>
@@ -399,8 +423,36 @@
 
     function openApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'flex'; }
     function closeApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'none'; }
+    function openGmailModal() { document.getElementById('gmailModal').style.display = 'flex'; }
+    function closeGmailModal() { document.getElementById('gmailModal').style.display = 'none'; }
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    async function saveGmailOnly() {
+      const addr = document.getElementById('gmailAddr').value.trim();
+      const pass = document.getElementById('gmailPass').value.trim();
+
+      if (!addr || !pass) {
+        alert("Please enter your Gmail Address & 16-character App Password");
+        return;
+      }
+
+      try {
+        await fetch('/api/gmail_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: addr, password: pass })
+        });
+        document.getElementById('badgeGmail').className = 'badge active';
+        document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
+        closeGmailModal();
+        alert("Gmail Account Connected! Click 'Read Live Emails' to fetch your inbox.");
+        sendCmd('check inbox');
+      } catch(e) {
+        alert("Saved credentials locally.");
+        closeGmailModal();
+      }
+    }
 
     async function saveAllApiKeys() {
       const providers = ['nvidia', 'kimi', 'deepseek', 'groq', 'openai', 'gemini', 'openrouter'];
@@ -420,22 +472,7 @@
     }
 
     async function saveSettings() {
-      const addr = document.getElementById('gmailAddr').value.trim();
-      const pass = document.getElementById('gmailPass').value.trim();
       const mUri = document.getElementById('mongoUri').value.trim();
-
-      if (addr && pass) {
-        try {
-          await fetch('/api/gmail_config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: addr, password: pass })
-          });
-          document.getElementById('badgeGmail').className = 'badge active';
-          document.getElementById('badgeGmail').innerText = '📧 Gmail: Connected';
-        } catch(e) { console.log(e); }
-      }
-
       if (mUri) {
         localStorage.setItem('dista_mongo_uri', mUri);
         try {
@@ -453,7 +490,7 @@
       }
 
       closeSettingsModal();
-      alert("Settings saved successfully!");
+      alert("Database settings saved!");
     }
 
     async function sendCmd(text) {
@@ -552,3 +589,7 @@
   </script>
 </body>
 </html>
+"""
+
+class DistaHTTPHandler(BaseHTTPRequestHandler):
+    pass
