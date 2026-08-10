@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import socketserver
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -11,6 +12,9 @@ from dista_gmail import gmail_service
 from dista_db import db_engine
 
 brain = DistaBrain()
+
+class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
+    daemon_threads = True
 
 class DistaHTTPHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
@@ -24,121 +28,127 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path.startswith('/api/'):
+        try:
+            if self.path.startswith('/api/'):
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "online", "active_provider": brain.active_provider, "use_mongo": db_engine.use_mongo}).encode('utf-8'))
+                return
+            
             self.send_response(200)
-            self._send_cors_headers()
-            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "online", "active_provider": brain.active_provider, "use_mongo": db_engine.use_mongo}).encode('utf-8'))
-            return
-        
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/html; charset=utf-8')
-        self.end_headers()
-        
-        public_html = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "index.html")
-        if os.path.exists(public_html):
-            with open(public_html, 'r', encoding='utf-8') as f:
-                self.wfile.write(f.read().encode('utf-8'))
-        else:
-            self.wfile.write(b"<h1>DISTA AI Backend Server</h1>")
+            
+            public_html = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "index.html")
+            if os.path.exists(public_html):
+                with open(public_html, 'r', encoding='utf-8') as f:
+                    self.wfile.write(f.read().encode('utf-8'))
+            else:
+                self.wfile.write(b"<h1>DISTA AI Backend Server</h1>")
+        except Exception as e:
+            print(f"[GET Error]: {e}")
 
     def do_POST(self):
-        content_length = int(self.headers.get('Content-Length', 0))
-        body_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
-        
         try:
-            payload = json.loads(body_data)
-        except Exception:
-            payload = {}
-
-        if self.path == '/api/chat':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+            
             try:
-                user_msg = payload.get('message', '')
-                result = brain.process_input(user_msg)
-            except Exception as e:
-                result = {"reply": f"Dista AI Engine: {str(e)}", "action": None, "data": None}
-                
-            self.send_response(200)
-            self._send_cors_headers()
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(result).encode('utf-8'))
+                payload = json.loads(body_data)
+            except Exception:
+                payload = {}
 
-        elif self.path == '/api/provider_config':
-            try:
-                provider = payload.get('provider', 'auto')
+            if self.path == '/api/chat':
+                try:
+                    user_msg = payload.get('message', '')
+                    result = brain.process_input(user_msg)
+                except Exception as e:
+                    result = {"reply": f"Dista AI Engine: {str(e)}", "action": None, "data": None}
+                    
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode('utf-8'))
+
+            elif self.path == '/api/test_key':
+                provider = payload.get('provider', 'nvidia')
                 key = payload.get('key', '')
-                brain.active_provider = provider
-                os.environ["ACTIVE_AI_PROVIDER"] = provider
-                if key:
-                    brain.set_api_key(provider, key)
-                
-                self.send_response(200)
-                self._send_cors_headers()
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'message': f'AI Provider set to {provider.upper()}!'}).encode('utf-8'))
-            except Exception as e:
-                self.send_response(500)
-                self._send_cors_headers()
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
+                try:
+                    res = brain.test_provider_key(provider, key)
+                except Exception as e:
+                    res = {'success': False, 'error': str(e)}
 
-        elif self.path == '/api/gmail_config':
-            try:
-                addr = payload.get('address', '')
-                passwd = payload.get('password', '')
-                gmail_service.set_credentials(addr, passwd)
-                
-                self.send_response(200)
-                self._send_cors_headers()
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'message': 'Gmail credentials configured!'}).encode('utf-8'))
-            except Exception as e:
-                self.send_response(500)
-                self._send_cors_headers()
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
-
-        elif self.path == '/api/openrouter_config':
-            try:
-                key = payload.get('key', '')
-                brain.set_api_key('openrouter', key)
-                
-                self.send_response(200)
-                self._send_cors_headers()
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': True, 'message': 'API Key configured!'}).encode('utf-8'))
-            except Exception as e:
-                self.send_response(500)
-                self._send_cors_headers()
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
-
-        elif self.path == '/api/mongodb_config':
-            try:
-                uri = payload.get('uri', '')
-                res = db_engine.connect_mongodb(uri)
-                
                 self.send_response(200)
                 self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(res).encode('utf-8'))
-            except Exception as e:
+
+            elif self.path == '/api/provider_config':
+                try:
+                    provider = payload.get('provider', 'auto')
+                    key = payload.get('key', '')
+                    brain.active_provider = provider
+                    os.environ["ACTIVE_AI_PROVIDER"] = provider
+                    if key:
+                        brain.set_api_key(provider, key)
+                    res = {'success': True, 'message': f'AI Provider set to {provider.upper()}!'}
+                except Exception as e:
+                    res = {'success': False, 'message': str(e)}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+
+            elif self.path == '/api/gmail_config':
+                try:
+                    addr = payload.get('address', '')
+                    passwd = payload.get('password', '')
+                    gmail_service.set_credentials(addr, passwd)
+                    res = {'success': True, 'message': 'Gmail credentials configured!'}
+                except Exception as e:
+                    res = {'success': False, 'message': str(e)}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+
+            elif self.path == '/api/mongodb_config':
+                try:
+                    uri = payload.get('uri', '')
+                    res = db_engine.connect_mongodb(uri)
+                except Exception as e:
+                    res = {'success': False, 'message': str(e)}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+
+        except Exception as e:
+            print(f"[POST Error]: {e}")
+            try:
                 self.send_response(500)
                 self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            except Exception:
+                pass
 
 def run_web_app():
     port = 5050
     server_address = ('', port)
-    httpd = HTTPServer(server_address, DistaHTTPHandler)
-    print(f"\n[DISTA AI] Web Server is LIVE at: http://localhost:{port}\n")
+    httpd = ThreadingHTTPServer(server_address, DistaHTTPHandler)
+    print(f"\n[DISTA AI] Multi-Threaded Web Server is LIVE at: http://localhost:{port}\n")
     
     import webbrowser
     try:

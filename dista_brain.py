@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import urllib.request
 import urllib.error
 import platform
@@ -31,8 +32,7 @@ except ImportError:
 class DistaBrain:
     """
     Enterprise-Grade Multi-Provider AI Engine powered by NVIDIA NIM (Llama 3.3 70B).
-    Supports NVIDIA NIM, Kimi/Moonshot, OpenAI, Anthropic Claude, Google Gemini,
-    DeepSeek, Groq, OpenRouter, and G4F Zero-Config Free Models.
+    Supports Live Key Diagnostics & Verification.
     """
 
     def __init__(self):
@@ -56,6 +56,105 @@ class DistaBrain:
         self.api_keys[provider] = key.strip()
         env_var = f"{provider.upper()}_API_KEY"
         os.environ[env_var] = key.strip()
+
+    def test_provider_key(self, provider: str, key: str) -> dict:
+        """Live verification endpoint for testing any AI API Key"""
+        prov = provider.lower().strip()
+        test_key = key.strip() or self.api_keys.get(prov, "")
+        if not test_key and prov != "g4f":
+            return {"success": False, "error": f"No API Key provided for {prov.upper()}."}
+
+        start_t = time.time()
+        query = "Hi"
+
+        try:
+            if prov == "nvidia":
+                url = "https://integrate.api.nvidia.com/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {
+                    "model": "meta/llama-3.3-70b-instruct",
+                    "messages": [{"role": "user", "content": query}],
+                    "max_tokens": 15
+                }
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "NVIDIA NIM (Llama 3.3 70B)", "reply": reply, "latency_ms": latency}
+
+            elif prov == "kimi":
+                url = "https://api.moonshot.cn/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {"model": "moonshot-v1-8k", "messages": [{"role": "user", "content": query}], "max_tokens": 15}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "Kimi AI / Moonshot", "reply": reply, "latency_ms": latency}
+
+            elif prov == "deepseek":
+                url = "https://api.deepseek.com/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {"model": "deepseek-chat", "messages": [{"role": "user", "content": query}], "max_tokens": 15}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "DeepSeek AI", "reply": reply, "latency_ms": latency}
+
+            elif prov == "groq":
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": query}], "max_tokens": 15}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "Groq Ultra-Fast AI", "reply": reply, "latency_ms": latency}
+
+            elif prov == "openai":
+                url = "https://api.openai.com/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": query}], "max_tokens": 15}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "OpenAI GPT-4o", "reply": reply, "latency_ms": latency}
+
+            elif prov == "gemini":
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={test_key}"
+                headers = {"Content-Type": "application/json"}
+                payload = {"contents": [{"parts": [{"text": query}]}]}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "Google Gemini 2.0", "reply": reply, "latency_ms": latency}
+
+            elif prov == "openrouter":
+                url = "https://openrouter.ai/api/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                payload = {"model": "openrouter/auto", "messages": [{"role": "user", "content": query}], "max_tokens": 15}
+                req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    latency = int((time.time() - start_t) * 1000)
+                    return {"success": True, "provider": "OpenRouter Universal AI", "reply": reply, "latency_ms": latency}
+
+        except urllib.error.HTTPError as e:
+            return {"success": False, "error": f"HTTP Error {e.code}: {e.reason}. Check your API Key."}
+        except Exception as e:
+            return {"success": False, "error": f"Connection Error: {str(e)}"}
+
+        return {"success": False, "error": f"Provider '{prov}' not recognized."}
 
     def _call_nvidia(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("nvidia") or os.environ.get("NVIDIA_API_KEY") or DEFAULT_NVIDIA_KEY

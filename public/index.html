@@ -55,7 +55,7 @@
       border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 700; outline: none; cursor: pointer;
     }
 
-    /* 1-Click Google Sign-In Button on Homescreen */
+    /* 1-Click Google Sign-In Banner on Homescreen */
     .google-signin-banner {
       background: #FFFFFF;
       color: #1F1F1F;
@@ -148,9 +148,17 @@
     .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 8px; }
     .modal-desc { font-size: 11px; color: #8C94A8; margin-bottom: 12px; line-height: 1.4; }
     .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 10px; font-size: 12.5px; }
+    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 6px; font-size: 12.5px; }
     .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
-    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11.5px; margin-bottom: 10px; display: inline-block; cursor: pointer; font-weight: 600; }
+    .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11.5px; margin-bottom: 6px; display: inline-block; cursor: pointer; font-weight: 600; }
+    
+    .key-input-group { display: flex; gap: 6px; margin-bottom: 4px; }
+    .key-input-group input { flex: 1; margin-bottom: 0; }
+    .test-btn { background: #00E5FF; color: #0F1017; border: none; border-radius: 8px; padding: 0 12px; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .test-btn:hover { background: #33EEFF; }
+    .test-result { font-size: 10px; font-weight: 600; margin-bottom: 10px; line-height: 1.3; }
+    .test-result.success { color: #00FF66; }
+    .test-result.error { color: #FF4444; }
 
     /* Bottom Input Pill Bar */
     .input-bar {
@@ -191,7 +199,7 @@
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
       </svg>
       <span>Sign In straight with Google / Gmail</span>
     </div>
@@ -200,8 +208,8 @@
     <div class="provider-bar">
       <span class="provider-label">ACTIVE AI MODEL:</span>
       <select class="provider-select" id="providerSelect" onchange="onProviderChange()">
-        <option value="auto">🌐 Auto Cascade (NVIDIA/Kimi/G4F)</option>
         <option value="nvidia">🟢 NVIDIA NIM (Llama 3.3 70B)</option>
+        <option value="auto">🌐 Auto Cascade (NVIDIA/Kimi/G4F)</option>
         <option value="kimi">🔴 Kimi AI / Moonshot AI</option>
         <option value="deepseek">🔵 DeepSeek-V3 / R1</option>
         <option value="groq">⚡ Groq Ultra-Fast AI</option>
@@ -231,7 +239,8 @@
 
     <!-- Quick Action Chips -->
     <div class="quick-actions">
-      <div class="action-chip key-chip" onclick="loginWithGoogle()">🌐 Sign In With Google</div>
+      <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Test AI API Keys</div>
+      <div class="action-chip" onclick="loginWithGoogle()">🌐 Sign In With Google</div>
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
       <div class="action-chip" onclick="sendCmd('check inbox')">📥 Read Live Emails</div>
       <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
@@ -270,7 +279,7 @@
         </p>
 
         <!-- 1-CLICK GOOGLE POPUP BUTTON -->
-        <button class="modal-btn" style="background:#FFFFFF;color:#1F1F1F;display:flex;align-items:center;justify-center;gap:10px;margin-bottom:14px" onclick="loginWithGoogle()">
+        <button class="modal-btn" style="background:#FFFFFF;color:#1F1F1F;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px" onclick="loginWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -293,41 +302,69 @@
       </div>
     </div>
 
-    <!-- Multi-Provider API Keys Setup Modal -->
+    <!-- Multi-Provider API Keys Setup & Live Testing Modal -->
     <div class="modal" id="apiKeyModal" style="display:none;">
       <div class="modal-card">
-        <div class="modal-title">🔑 Multi-Provider AI API Keys</div>
+        <div class="modal-title">🔑 Test & Configure AI API Keys</div>
         <p class="modal-desc">
-          Configure API keys for any provider. Click the link to get your key instantly:
+          Click <b>🧪 TEST KEY</b> to run a live diagnostic ping on any AI API Key!
         </p>
 
-        <label class="modal-label">NVIDIA NIM API KEY</label>
-        <input type="password" class="modal-input" id="keyNvidia" placeholder="nvapi-..." />
-        <a href="https://build.nvidia.com/" target="_blank" class="link-btn">🔗 Get Free NVIDIA NIM Key</a>
+        <!-- NVIDIA NIM -->
+        <label class="modal-label">NVIDIA NIM API KEY (DEFAULT ACTIVE)</label>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyNvidia" value="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" />
+          <button class="test-btn" onclick="testKeyLive('nvidia')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resNvidia"></div>
 
+        <!-- KIMI AI -->
         <label class="modal-label">KIMI AI / MOONSHOT KEY</label>
-        <input type="password" class="modal-input" id="keyKimi" placeholder="sk-..." />
-        <a href="https://platform.moonshot.cn/" target="_blank" class="link-btn">🔗 Get Kimi / Moonshot API Key</a>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyKimi" placeholder="sk-..." />
+          <button class="test-btn" onclick="testKeyLive('kimi')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resKimi"></div>
 
+        <!-- DEEPSEEK -->
         <label class="modal-label">DEEPSEEK API KEY</label>
-        <input type="password" class="modal-input" id="keyDeepseek" placeholder="sk-..." />
-        <a href="https://platform.deepseek.com/" target="_blank" class="link-btn">🔗 Get DeepSeek API Key</a>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyDeepseek" placeholder="sk-..." />
+          <button class="test-btn" onclick="testKeyLive('deepseek')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resDeepseek"></div>
 
-        <label class="modal-label">GROQ API KEY</label>
-        <input type="password" class="modal-input" id="keyGroq" placeholder="gsk_..." />
-        <a href="https://console.groq.com/keys" target="_blank" class="link-btn">🔗 Get Groq Ultra-Fast API Key</a>
+        <!-- GROQ -->
+        <label class="modal-label">GROQ ULTRA-FAST API KEY</label>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyGroq" placeholder="gsk_..." />
+          <button class="test-btn" onclick="testKeyLive('groq')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resGroq"></div>
 
+        <!-- OPENAI -->
         <label class="modal-label">OPENAI API KEY</label>
-        <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." />
-        <a href="https://platform.openai.com/api-keys" target="_blank" class="link-btn">🔗 Get OpenAI Key</a>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." />
+          <button class="test-btn" onclick="testKeyLive('openai')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resOpenai"></div>
 
+        <!-- GEMINI -->
         <label class="modal-label">GOOGLE GEMINI API KEY</label>
-        <input type="password" class="modal-input" id="keyGemini" placeholder="AIzaSy..." />
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-btn">🔗 Get Google Gemini Key</a>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyGemini" placeholder="AIzaSy..." />
+          <button class="test-btn" onclick="testKeyLive('gemini')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resGemini"></div>
 
+        <!-- OPENROUTER -->
         <label class="modal-label">OPENROUTER API KEY</label>
-        <input type="password" class="modal-input" id="keyOpenrouter" placeholder="sk-or-v1-..." />
-        <a href="https://openrouter.ai/keys" target="_blank" class="link-btn">🔗 Get OpenRouter Universal Key</a>
+        <div class="key-input-group">
+          <input type="password" class="modal-input" id="keyOpenrouter" placeholder="sk-or-v1-..." />
+          <button class="test-btn" onclick="testKeyLive('openrouter')">🧪 TEST KEY</button>
+        </div>
+        <div class="test-result" id="resOpenrouter"></div>
 
         <button class="modal-btn" onclick="saveAllApiKeys()">Save All API Keys</button>
         <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
@@ -382,9 +419,77 @@
         document.getElementById('googleBanner').style.display = 'none';
       }
 
-      const activeProv = localStorage.getItem('dista_active_provider') || 'auto';
+      const activeProv = localStorage.getItem('dista_active_provider') || 'nvidia';
       document.getElementById('providerSelect').value = activeProv;
     });
+
+    async function testKeyLive(provider) {
+      const inputId = 'key' + provider.charAt(0).toUpperCase() + provider.slice(1);
+      const resId = 'res' + provider.charAt(0).toUpperCase() + provider.slice(1);
+      const keyVal = document.getElementById(inputId).value.trim();
+      const resEl = document.getElementById(resId);
+
+      resEl.className = 'test-result';
+      resEl.innerText = "⏳ Running live API diagnostic ping...";
+      const startT = Date.now();
+
+      try {
+        let url = "";
+        let headers = {};
+        let body = {};
+
+        if (provider === 'nvidia') {
+          url = "https://integrate.api.nvidia.com/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "meta/llama-3.3-70b-instruct", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'openai') {
+          url = "https://api.openai.com/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'groq') {
+          url = "https://api.groq.com/openai/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'deepseek') {
+          url = "https://api.deepseek.com/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "deepseek-chat", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'kimi') {
+          url = "https://api.moonshot.cn/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "moonshot-v1-8k", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'openrouter') {
+          url = "https://openrouter.ai/api/v1/chat/completions";
+          headers = { "Authorization": "Bearer " + keyVal, "Content-Type": "application/json" };
+          body = JSON.stringify({ model: "openrouter/auto", messages: [{ role: "user", content: "Hi" }], max_tokens: 15 });
+        } else if (provider === 'gemini') {
+          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + keyVal;
+          headers = { "Content-Type": "application/json" };
+          body = JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] });
+        }
+
+        const resp = await fetch(url, { method: 'POST', headers: headers, body: body });
+        const latency = Date.now() - startT;
+
+        if (resp.ok) {
+          const data = await resp.json();
+          let reply = "Key verified active!";
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            reply = data.choices[0].message.content;
+          } else if (data.candidates && data.candidates[0]) {
+            reply = data.candidates[0].content.parts[0].text;
+          }
+          resEl.className = 'test-result success';
+          resEl.innerText = `✅ LIVE & ACTIVE! (${latency}ms) Response: "${reply.trim()}"`;
+        } else {
+          resEl.className = 'test-result error';
+          resEl.innerText = `❌ Key Error: HTTP ${resp.status} ${resp.statusText}. Please verify key.`;
+        }
+      } catch (e) {
+        resEl.className = 'test-result error';
+        resEl.innerText = `❌ Diagnostic Notice: ${e.message}`;
+      }
+    }
 
     // 1-Click Google OAuth Sign In
     function loginWithGoogle() {
@@ -402,7 +507,6 @@
 
     function handleGoogleCredentialResponse(response) {
       if (response && response.credential) {
-        // Decode JWT token payload
         try {
           const base64Url = response.credential.split('.')[1];
           const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');

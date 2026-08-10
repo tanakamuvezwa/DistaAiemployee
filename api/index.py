@@ -15,7 +15,7 @@ brain = DistaBrain()
 class handler(BaseHTTPRequestHandler):
     """
     Vercel Serverless Python Function Handler
-    Handles API endpoints: /api/chat, /api/gmail_config, /api/openrouter_config, /api/provider_config, /api/mongodb_config
+    Handles API endpoints: /api/chat, /api/test_key, /api/provider_config, /api/gmail_config, /api/mongodb_config
     """
 
     def _send_cors_headers(self):
@@ -66,6 +66,17 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
 
+        elif path.endswith('/test_key') or '/api/test_key' in path:
+            provider = payload.get('provider', 'nvidia')
+            key = payload.get('key', '')
+            res = brain.test_provider_key(provider, key)
+            
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode('utf-8'))
+
         elif path.endswith('/provider_config') or '/api/provider_config' in path:
             provider = payload.get('provider', 'auto')
             key = payload.get('key', '')
@@ -90,16 +101,6 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'success': True, 'message': 'Gmail credentials configured!'}).encode('utf-8'))
-
-        elif path.endswith('/openrouter_config') or '/api/openrouter_config' in path:
-            key = payload.get('key', '')
-            brain.set_api_key('openrouter', key)
-            
-            self.send_response(200)
-            self._send_cors_headers()
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'success': True, 'message': 'OpenRouter API Key configured!'}).encode('utf-8'))
 
         elif path.endswith('/mongodb_config') or '/api/mongodb_config' in path:
             uri = payload.get('uri', '')
