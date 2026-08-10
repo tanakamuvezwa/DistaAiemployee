@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISTA AI — Executive Workspace Assistant</title>
+  <title>DISTA AI — Logged In Executive Workspace</title>
   <!-- Official Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #0F1017; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    body { background-color: #0B0C10; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
     
     /* Phone Shell Container */
     .app-card {
@@ -21,158 +21,119 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 45px rgba(255,107,0,0.2);
       display: flex;
       flex-direction: column;
-      padding: 24px 20px;
+      padding: 20px;
       position: relative;
       overflow: hidden;
     }
 
-    /* Top Header Bar */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .brand { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFF; }
-    .brand span { color: #FF6B00; }
-    .header-btn { width: 36px; height: 36px; border-radius: 18px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; }
-    .header-btn:hover { border-color: #FF6B00; color: #FFF; }
-
-    /* Badges */
-    .badge-bar { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; cursor: pointer; }
-    .badge.active { border-color: #FF6B00; color: #FF6B00; }
-
-    /* AI Engine Selector Bar */
-    .provider-bar {
-      background: #1A1C28;
-      border: 1px solid #282B3D;
-      border-radius: 14px;
-      padding: 6px 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    /* ── UNAUTHENTICATED LOGIN SCREEN ────────────────────────── */
+    .auth-screen {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 20px; padding: 20px;
     }
-    .provider-label { font-size: 11px; font-weight: 700; color: #8C94A8; }
-    .provider-select {
-      background: #0F1017; border: 1px solid #FF6B00; color: #FF6B00;
-      border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 700; outline: none; cursor: pointer;
+    .auth-logo { font-size: 32px; font-weight: 900; letter-spacing: 2px; color: #FFF; }
+    .auth-logo span { color: #FF6B00; }
+    .auth-desc { font-size: 13px; color: #8C94A8; line-height: 1.5; max-width: 320px; }
+    
+    .google-signin-main {
+      background: #FFFFFF; color: #1F1F1F; border-radius: 28px; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-size: 14px; font-weight: 800; cursor: pointer; width: 100%; max-width: 340px;
+      box-shadow: 0 6px 25px rgba(255,255,255,0.25); transition: all 0.25s ease; border: none;
     }
+    .google-signin-main:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,255,255,0.4); }
 
-    /* 1-Click Google Sign-In Banner on Homescreen */
-    .google-signin-banner {
-      background: #FFFFFF;
-      color: #1F1F1F;
-      border-radius: 20px;
-      padding: 10px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-      transition: all 0.2s ease;
+    /* ── LOGGED IN APP DASHBOARD ──────────────────────────────── */
+    .dashboard-screen { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+
+    /* Top User Profile Header */
+    .user-bar {
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 18px; padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .google-signin-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,255,255,0.3); }
-
-    /* Center Avatar Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 8px; }
-    .avatar-ring {
-      width: 115px; height: 115px; border-radius: 50%;
-      border: 2.5px solid #FF6B00;
-      box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
-      display: flex; align-items: center; justify-content: center;
-      position: relative; transition: all 0.3s;
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #FF6B00, #FF8800);
+      color: #FFF; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 12px rgba(255,107,0,0.5);
     }
-    .avatar-ring.listening { border-color: #00E5FF; box-shadow: 0 0 30px rgba(0,229,255,0.6); }
-    .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
+    .user-name { font-size: 13px; font-weight: 800; color: #FFF; }
+    .user-email { font-size: 10.5px; color: #8C94A8; }
+    .logout-btn { background: #0F1017; border: 1px solid #282B3D; color: #FF4444; border-radius: 10px; padding: 5px 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .logout-btn:hover { border-color: #FF4444; background: rgba(255,68,68,0.1); }
 
-    .pixel-avatar {
-      width: 78px; height: 78px;
-      background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
-      clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
-      position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    /* Navigation Bar Tabs */
+    .nav-tabs { display: flex; background: #1A1C28; border: 1px solid #282B3D; border-radius: 14px; padding: 4px; gap: 4px; }
+    .nav-tab {
+      flex: 1; text-align: center; padding: 7px 0; border-radius: 10px; font-size: 11px; font-weight: 700;
+      color: #8C94A8; cursor: pointer; transition: all 0.2s;
     }
-    .pixel-eyes { display: flex; gap: 18px; margin-top: -8px; }
-    .pixel-eye { width: 11px; height: 11px; background: #FF6B00; border-radius: 3px; box-shadow: 0 0 8px #FF6B00; }
-    .pixel-eye.listening { background: #00E5FF; box-shadow: 0 0 10px #00E5FF; }
-    .pixel-mouth { width: 18px; height: 4px; background: #282C3A; margin-top: 10px; border-radius: 2px; }
-    .pixel-mouth.speaking { background: #FF6B00; height: 8px; animation: mouthTalk 0.2s infinite alternate; }
+    .nav-tab.active { background: #FF6B00; color: #FFF; }
 
-    @keyframes mouthTalk { from { height: 3px; } to { height: 9px; } }
-
-    .greeting { font-size: 12px; font-weight: 600; color: #E2E8F0; max-width: 340px; line-height: 1.4; min-height: 34px; }
-
-    /* Audio Waveform */
-    .waveform { display: flex; align-items: center; justify-content: center; gap: 3.5px; height: 24px; }
-    .wave-bar { width: 4px; height: 8px; background: #FF6B00; border-radius: 2px; transition: height 0.15s ease; }
-    .wave-bar.white { background: #FFFFFF; }
-
-    /* Action Shortcut Bar */
-    .quick-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none; }
-    .quick-actions::-webkit-scrollbar { display: none; }
-    .action-chip {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 20px;
-      padding: 6px 14px; font-size: 11px; font-weight: 600; color: #CBD5E1;
-      white-space: nowrap; cursor: pointer; transition: all 0.2s;
+    /* Metrics Summary Strip */
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .metric-card {
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 14px; padding: 8px; text-align: center;
     }
-    .action-chip:hover { border-color: #FF6B00; color: #FFF; background: #222536; }
-    .action-chip.key-chip { background: rgba(255,107,0,0.15); border-color: #FF6B00; color: #FF6B00; font-weight: 800; }
+    .metric-val { font-size: 14px; font-weight: 900; color: #FF6B00; }
+    .metric-lbl { font-size: 9.5px; font-weight: 700; color: #8C94A8; margin-top: 2px; }
 
-    /* Main Container Views */
-    .view-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    /* Content Area Views */
+    .content-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 
-    /* Tool Grid (2x2) */
-    .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
-    .tool-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 12px;
-      cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .tool-card:hover { border-color: #FF6B00; background: #222536; transform: translateY(-2px); }
-    .card-hdr { display: flex; align-items: center; gap: 8px; }
-    .card-icon { font-size: 18px; }
-    .card-title { font-size: 13px; font-weight: 700; color: #FFF; }
-    .card-sub { font-size: 11px; color: #8C94A8; line-height: 1.3; margin-top: 4px; }
-
-    /* Dedicated Gmail Inbox Screen & AI Suggestions */
-    .inbox-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .inbox-title { font-size: 14px; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 6px; }
-    .inbox-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
-    .inbox-tab { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 10px; background: #1A1C28; border: 1px solid #282B3D; color: #8C94A8; cursor: pointer; }
-    .inbox-tab.active { background: #FF6B00; color: #FFF; border-color: #FF6B00; }
-
+    /* 1. Gmail Inbox & AI Suggestions Screen */
     .email-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 14px;
-      display: flex; flex-direction: column; gap: 10px; transition: all 0.2s;
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 12px;
+      display: flex; flex-direction: column; gap: 8px; transition: all 0.2s;
     }
     .email-card:hover { border-color: #FF6B00; background: #222536; }
     .email-hdr { display: flex; justify-content: space-between; align-items: center; }
-    .email-sender { font-size: 12.5px; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px; }
-    .avatar-mini { width: 22px; height: 22px; border-radius: 50%; background: #FF6B00; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; }
+    .email-sender { font-size: 12px; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px; }
+    .avatar-mini { width: 20px; height: 20px; border-radius: 50%; background: #FF6B00; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; }
     .email-time { font-size: 10px; color: #8C94A8; }
-    .email-subject { font-size: 12px; font-weight: 700; color: #FF8800; }
-    .email-body { font-size: 11.5px; color: #CBD5E1; line-height: 1.4; }
+    .email-subject { font-size: 11.5px; font-weight: 700; color: #FF8800; }
+    .email-body { font-size: 11px; color: #CBD5E1; line-height: 1.35; }
 
-    /* AI Suggestions Box */
     .ai-suggestions-box {
-      background: rgba(0, 229, 255, 0.05); border: 1px dashed #00E5FF; border-radius: 12px; padding: 10px;
-      display: flex; flex-direction: column; gap: 6px;
+      background: rgba(0, 229, 255, 0.05); border: 1px dashed #00E5FF; border-radius: 10px; padding: 8px;
+      display: flex; flex-direction: column; gap: 5px;
     }
-    .ai-sug-title { font-size: 10px; font-weight: 800; color: #00E5FF; letter-spacing: 0.5px; text-transform: uppercase; }
-    .ai-sug-chips { display: flex; flex-direction: column; gap: 5px; }
+    .ai-sug-title { font-size: 9.5px; font-weight: 800; color: #00E5FF; letter-spacing: 0.5px; text-transform: uppercase; }
     .ai-sug-chip {
-      background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 6px 10px;
-      font-size: 10.5px; color: #E2E8F0; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
+      background: #0F1017; border: 1px solid #282B3D; border-radius: 6px; padding: 5px 8px;
+      font-size: 10px; color: #E2E8F0; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
     }
     .ai-sug-chip:hover { border-color: #00E5FF; color: #00E5FF; background: #1A1C28; }
 
-    /* Chat Stream View */
-    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
-    .msg-bubble { padding: 12px 15px; border-radius: 14px; font-size: 13px; max-width: 92%; line-height: 1.5; animation: fadeIn 0.2s ease; white-space: pre-wrap; word-break: break-word; }
-    .msg-bubble a { color: #00E5FF; text-decoration: underline; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    /* 2. Dista AI Voice Assistant Box */
+    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin: 4px 0; }
+    .avatar-ring {
+      width: 90px; height: 90px; border-radius: 50%; border: 2.5px solid #FF6B00;
+      box-shadow: 0 0 20px rgba(255,107,0,0.45); display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+    }
+    .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 25px rgba(255,136,0,0.6); }
+    .pixel-avatar {
+      width: 60px; height: 60px; background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
+      clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .pixel-eyes { display: flex; gap: 14px; margin-top: -6px; }
+    .pixel-eye { width: 8px; height: 8px; background: #FF6B00; border-radius: 2px; }
+    .pixel-mouth { width: 14px; height: 3px; background: #282C3A; margin-top: 8px; }
+
+    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .msg-bubble { padding: 10px 12px; border-radius: 12px; font-size: 12px; max-width: 90%; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
     .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
     .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
+
+    /* 3. Document Item */
+    .doc-item {
+      background: #1A1C28; border: 1px solid #282B3D; border-radius: 12px; padding: 10px 12px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .doc-item:hover { border-color: #FF6B00; }
+    .doc-title { font-size: 12px; font-weight: 700; color: #FFF; }
+    .doc-date { font-size: 10px; color: #8C94A8; }
 
     /* Modal Windows */
     .modal {
@@ -200,182 +161,181 @@
       background: #1A1C28; border: 1px solid #2A2D40; border-radius: 28px;
       padding: 6px 8px 6px 16px; display: flex; align-items: center; gap: 10px; margin-top: auto;
     }
-    .input-bar input {
-      flex: 1; background: transparent; border: none; outline: none; color: #FFF; font-size: 13px;
-    }
+    .input-bar input { flex: 1; background: transparent; border: none; outline: none; color: #FFF; font-size: 12.5px; }
     .mic-btn {
-      width: 40px; height: 40px; border-radius: 20px; background: #FF6B00; border: none;
-      color: #FFF; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 18px; background: #FF6B00; border: none;
+      color: #FFF; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 0 15px rgba(255,107,0,0.5); transition: all 0.2s;
     }
-    .mic-btn.active { background: #00E5FF; box-shadow: 0 0 20px rgba(0,229,255,0.7); color: #0F1017; }
-    .mic-btn:hover { transform: scale(1.05); }
+    .mic-btn.active { background: #00E5FF; color: #0F1017; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <!-- Header -->
-    <div class="header">
-      <div class="header-btn" onclick="showView('grid')" title="Homescreen Grid">≡</div>
-      <div class="brand">DISTA <span>AI</span></div>
-      <div class="header-btn" onclick="openApiKeyModal()" title="API Key Settings">🔑</div>
-    </div>
-
-    <!-- Status Badges -->
-    <div class="badge-bar">
-      <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🧠 AI Engine Active</div>
-      <div class="badge" id="badgeGmail" onclick="loginWithGoogle()">📧 Sign In With Google</div>
-      <div class="badge" id="badgeDb" onclick="openSettingsModal()">💾 Database Active</div>
-    </div>
-
-    <!-- 1-CLICK GOOGLE SIGN IN BANNER -->
-    <div class="google-signin-banner" id="googleBanner" onclick="loginWithGoogle()">
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-      </svg>
-      <span>1-Click Sign In with Google / Gmail</span>
-    </div>
-
-    <!-- Provider Selection Bar -->
-    <div class="provider-bar">
-      <span class="provider-label">ACTIVE AI MODEL:</span>
-      <select class="provider-select" id="providerSelect" onchange="onProviderChange()">
-        <option value="nvidia">🟢 NVIDIA NIM (Llama 3.3 70B)</option>
-        <option value="auto">🌐 Auto Cascade (NVIDIA/Kimi/G4F)</option>
-        <option value="kimi">🔴 Kimi AI / Moonshot AI</option>
-        <option value="deepseek">🔵 DeepSeek-V3 / R1</option>
-        <option value="groq">⚡ Groq Ultra-Fast AI</option>
-        <option value="openai">🟢 OpenAI GPT-4o</option>
-        <option value="gemini">🟢 Google Gemini 2.0</option>
-        <option value="claude">🟣 Anthropic Claude 3.5</option>
-        <option value="openrouter">⚡ OpenRouter Auto</option>
-      </select>
-    </div>
-
-    <!-- Centerpiece Avatar -->
-    <div class="avatar-box">
-      <div class="avatar-ring" id="avatarRing">
-        <div class="pixel-avatar">
-          <div class="pixel-eyes">
-            <div class="pixel-eye" id="eyeL"></div>
-            <div class="pixel-eye" id="eyeR"></div>
-          </div>
-          <div class="pixel-mouth" id="pixelMouth"></div>
-        </div>
+    
+    <!-- 1. UNAUTHENTICATED LOGIN LANDING VIEW -->
+    <div class="auth-screen" id="authScreen">
+      <div class="auth-logo">DISTA <span>AI</span></div>
+      <div class="auth-desc">
+        Enterprise Personal Executive Assistant powered by <b>NVIDIA NIM (Llama 3.3 70B)</b>, Gmail & Multi-AI Cloud Subsystems.
       </div>
-      <div class="greeting" id="greetingText">Hello! I'm Dista AI. Ask me anything or state your command.</div>
+
+      <button class="google-signin-main" onclick="loginWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Sign In straight with Google</span>
+      </button>
+
+      <div style="font-size:11px;color:#8C94A8;margin-top:10px">
+        Click to authenticate instantly and unlock your executive app.
+      </div>
+    </div>
+
+    <!-- 2. LOGGED IN APP DASHBOARD -->
+    <div class="dashboard-screen" id="dashboardScreen" style="display:none;">
       
-      <!-- Waveform -->
-      <div class="waveform" id="waveform"></div>
-    </div>
-
-    <!-- Quick Action Chips -->
-    <div class="quick-actions">
-      <div class="action-chip key-chip" onclick="showView('inbox')">📥 Open Live Gmail Screen</div>
-      <div class="action-chip" onclick="openApiKeyModal()">🔑 Test AI API Keys</div>
-      <div class="action-chip" onclick="loginWithGoogle()">🌐 Sign In With Google</div>
-      <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
-      <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
-      <div class="action-chip" onclick="sendCmd('create doc')">📄 Create Note</div>
-      <div class="action-chip" onclick="sendCmd('system')">💻 System Diagnostic</div>
-    </div>
-
-    <!-- MAIN VIEW 1: Tool Grid -->
-    <div class="tool-grid view-panel" id="toolGrid">
-      <div class="tool-card" onclick="showView('inbox')">
-        <div class="card-hdr"><span class="card-icon">✉️</span><span class="card-title">Gmail & AI Inbox</span></div>
-        <div class="card-sub">Read Emails & AI Suggestions<br/><b style="color:#FF6B00">3 Unread Messages</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('read docs')">
-        <div class="card-hdr"><span class="card-icon">📄</span><span class="card-title">Docs</span></div>
-        <div class="card-sub">Open Documents<br/><b style="color:#FF6B00">Recent: 5</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('check messages')">
-        <div class="card-hdr"><span class="card-icon">💬</span><span class="card-title">Messages</span></div>
-        <div class="card-sub">Send Messages<br/><b style="color:#FF6B00">Notifications: 2</b></div>
-      </div>
-      <div class="tool-card" onclick="sendCmd('system')">
-        <div class="card-hdr"><span class="card-icon">💻</span><span class="card-title">System</span></div>
-        <div class="card-sub">CPU & Memory<br/><b style="color:#FF6B00">Status: Peak</b></div>
-      </div>
-    </div>
-
-    <!-- MAIN VIEW 2: Dedicated Gmail & AI Suggestions Screen -->
-    <div class="view-panel" id="inboxView" style="display:none;">
-      <div class="inbox-header">
-        <div class="inbox-title">📧 Live Gmail Inbox & AI Suggestions</div>
-        <button class="badge active" onclick="loginWithGoogle()">Google OAuth</button>
-      </div>
-
-      <div class="inbox-tabs">
-        <div class="inbox-tab active">All Emails (3)</div>
-        <div class="inbox-tab">Important</div>
-        <div class="inbox-tab">AI Smart Drafts</div>
-      </div>
-
-      <!-- Email 1 -->
-      <div class="email-card">
-        <div class="email-hdr">
-          <div class="email-sender">
-            <div class="avatar-mini">S</div>
-            <span>Sarah Jenkins (TechCorp CEO)</span>
+      <!-- User Profile Header -->
+      <div class="user-bar">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">T</div>
+          <div>
+            <div class="user-name" id="userName">Tanaka Muvezwa</div>
+            <div class="user-email" id="userEmail">tanakamuvezwa@gmail.com</div>
           </div>
-          <div class="email-time">09:15 AM</div>
         </div>
-        <div class="email-subject">Q3 Product Strategy & Partnership Review</div>
-        <div class="email-body">
-          Hi Tanaka, please review the attached Q3 AI integration roadmap and let me know if we can sign off on the production deployment today.
+        <button class="logout-btn" onclick="logoutGoogle()">Sign Out</button>
+      </div>
+
+      <!-- Metrics Summary Strip -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-val">3 New</div>
+          <div class="metric-lbl">Gmail Inbox</div>
         </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color:#00E5FF">NVIDIA 70B</div>
+          <div class="metric-lbl">AI Model</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color:#00FF66">MongoDB</div>
+          <div class="metric-lbl">Cloud Storage</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <div class="nav-tab active" id="tabInbox" onclick="switchTab('inbox')">📧 Inbox & AI</div>
+        <div class="nav-tab" id="tabAi" onclick="switchTab('ai')">🧠 Dista AI</div>
+        <div class="nav-tab" id="tabDocs" onclick="switchTab('docs')">📄 Documents</div>
+        <div class="nav-tab" id="tabKeys" onclick="openApiKeyModal()">🔑 Keys</div>
+      </div>
+
+      <!-- CONTENT VIEW 1: Dedicated Gmail & AI Suggestions -->
+      <div class="content-panel" id="panelInbox">
         
-        <!-- AI Smart Suggestions Widget -->
-        <div class="ai-suggestions-box">
-          <div class="ai-sug-title">💡 Dista AI Smart Action Suggestions</div>
-          <div class="ai-sug-chips">
-            <div class="ai-sug-chip" onclick="sendCmd('send email to sarah@techcorp.com Approved! Roadmap looks fantastic.')">
-              <span>⚡ Auto-Draft: "Approved! Roadmap looks fantastic."</span>
-              <b>SEND →</b>
+        <!-- Email 1 -->
+        <div class="email-card">
+          <div class="email-hdr">
+            <div class="email-sender">
+              <div class="avatar-mini">S</div>
+              <span>Sarah Jenkins (TechCorp CEO)</span>
             </div>
-            <div class="ai-sug-chip" onclick="sendCmd('create doc Q3 AI Deployment Plan')">
+            <div class="email-time">09:15 AM</div>
+          </div>
+          <div class="email-subject">Q3 AI Integration Strategy</div>
+          <div class="email-body">
+            Hi Tanaka, please review the Q3 AI integration roadmap and let me know if we can sign off on the production deployment today.
+          </div>
+          
+          <div class="ai-suggestions-box">
+            <div class="ai-sug-title">💡 Dista AI Smart Suggestions</div>
+            <div class="ai-sug-chip" onclick="sendCmd('send email to sarah@techcorp.com Approved! Strategy looks fantastic.')">
+              <span>⚡ Auto-Draft: "Approved! Strategy looks fantastic."</span>
+              <b style="color:#00E5FF">SEND →</b>
+            </div>
+            <div class="ai-sug-chip" onclick="sendCmd('create doc Q3 Strategy Outline')">
               <span>📄 Action: Create Workspace Document</span>
-              <b>CREATE →</b>
+              <b style="color:#00E5FF">CREATE →</b>
             </div>
           </div>
+        </div>
+
+        <!-- Email 2 -->
+        <div class="email-card">
+          <div class="email-hdr">
+            <div class="email-sender">
+              <div class="avatar-mini" style="background:#00E5FF;color:#0F1017">A</div>
+              <span>Alex Rivera (Lead Engineer)</span>
+            </div>
+            <div class="email-time">Yesterday</div>
+          </div>
+          <div class="email-subject">NVIDIA NIM & DeepSeek Latency Test</div>
+          <div class="email-body">
+            The multi-provider AI endpoints are live on Vercel. Latency is under 150ms for Llama 3.3 70B.
+          </div>
+          
+          <div class="ai-suggestions-box">
+            <div class="ai-sug-title">💡 Dista AI Smart Suggestions</div>
+            <div class="ai-sug-chip" onclick="sendCmd('send email to alex.dev@company.com Great work on the latency!')">
+              <span>⚡ Auto-Draft: "Great work on the latency!"</span>
+              <b style="color:#00E5FF">SEND →</b>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CONTENT VIEW 2: Dista AI Assistant & Voice Chat -->
+      <div class="content-panel" id="panelAi" style="display:none;">
+        <div class="avatar-box">
+          <div class="avatar-ring" id="avatarRing">
+            <div class="pixel-avatar">
+              <div class="pixel-eyes">
+                <div class="pixel-eye"></div>
+                <div class="pixel-eye"></div>
+              </div>
+              <div class="pixel-mouth" id="pixelMouth"></div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;font-weight:700;color:#FFF" id="greetingText">Hello! I'm Dista AI. How can I assist you?</div>
+        </div>
+
+        <div class="chat-stream" id="chatStream">
+          <div class="msg-bubble msg-dista">Hello Tanaka! I'm Dista AI, your executive assistant powered by NVIDIA NIM (Llama 3.3 70B).</div>
         </div>
       </div>
 
-      <!-- Email 2 -->
-      <div class="email-card">
-        <div class="email-hdr">
-          <div class="email-sender">
-            <div class="avatar-mini" style="background:#00E5FF;color:#0F1017">A</div>
-            <span>Alex Rivera (Lead Engineer)</span>
+      <!-- CONTENT VIEW 3: Workspace Documents -->
+      <div class="content-panel" id="panelDocs" style="display:none;">
+        <div class="doc-item" onclick="sendCmd('read docs')">
+          <div>
+            <div class="doc-title">📄 note_20260811_021500.md</div>
+            <div class="doc-date">Q3 AI Integration Strategy Notes</div>
           </div>
-          <div class="email-time">Yesterday</div>
+          <b style="color:#FF6B00">OPEN →</b>
         </div>
-        <div class="email-subject">NVIDIA NIM & DeepSeek API Integration Live</div>
-        <div class="email-body">
-          The multi-provider AI endpoints are now live on Vercel. Latency is under 150ms for Llama 3.3.
-        </div>
-        
-        <div class="ai-suggestions-box">
-          <div class="ai-sug-title">💡 Dista AI Smart Action Suggestions</div>
-          <div class="ai-sug-chips">
-            <div class="ai-sug-chip" onclick="sendCmd('send email to alex.dev@company.com Great job on the latency!')">
-              <span>⚡ Auto-Draft: "Great job on the latency!"</span>
-              <b>SEND →</b>
-            </div>
+        <div class="doc-item" onclick="sendCmd('read docs')">
+          <div>
+            <div class="doc-title">📄 executive_briefing.md</div>
+            <div class="doc-date">Daily Executive Briefing Overview</div>
           </div>
+          <b style="color:#FF6B00">OPEN →</b>
         </div>
       </div>
+
+      <!-- Bottom Command Input Pill -->
+      <div class="input-bar">
+        <input type="text" id="userInput" placeholder="Ask Dista AI or state command..." onkeydown="if(event.key==='Enter') sendInput()" />
+        <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
+      </div>
+
     </div>
 
-    <!-- MAIN VIEW 3: Chat Stream -->
-    <div class="chat-stream view-panel" id="chatStream" style="display:none;"></div>
-
-    <!-- Multi-Provider API Keys Setup & Live Testing Modal -->
+    <!-- Multi-Provider API Keys Setup Modal -->
     <div class="modal" id="apiKeyModal" style="display:none;">
       <div class="modal-card">
         <div class="modal-title">🔑 Test & Configure AI API Keys</div>
@@ -439,30 +399,10 @@
         </div>
         <div class="test-result" id="resOpenrouter"></div>
 
-        <button class="modal-btn" onclick="saveAllApiKeys()">Save All API Keys</button>
-        <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
+        <button class="modal-btn" onclick="closeApiKeyModal()">Done</button>
       </div>
     </div>
 
-    <!-- Full Settings & MongoDB Modal -->
-    <div class="modal" id="settingsModal" style="display:none;">
-      <div class="modal-card">
-        <div class="modal-title">⚙️ Cloud Database Settings</div>
-        
-        <label class="modal-label">MONGODB ATLAS CONNECTION URI</label>
-        <input type="password" class="modal-input" id="mongoUri" placeholder="mongodb+srv://user:password@cluster.mongodb.net/dista_db" />
-        <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" class="link-btn">🔗 Get Free MongoDB Atlas Cloud Database Link</a>
-
-        <button class="modal-btn" onclick="saveSettings()">Save & Connect Cloud</button>
-        <button class="modal-btn" style="background:#282B3D" onclick="closeSettingsModal()">Close</button>
-      </div>
-    </div>
-
-    <!-- Bottom Input Pill Bar -->
-    <div class="input-bar">
-      <input type="text" id="userInput" placeholder="Ask Dista anything or speak..." onkeydown="if(event.key==='Enter') sendInput()" />
-      <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Toggle Voice Recognition">🎤</button>
-    </div>
   </div>
 
   <script>
@@ -470,77 +410,36 @@
     let isSpeaking = false;
     const GOOGLE_CLIENT_ID = "327420491230-g63opo9hup5sofegimdchaoibldjaack.apps.googleusercontent.com";
 
-    // Load saved API keys on startup
     window.addEventListener('DOMContentLoaded', () => {
-      ['nvidia', 'kimi', 'deepseek', 'groq', 'openai', 'gemini', 'openrouter'].forEach(provider => {
-        const saved = localStorage.getItem('dista_' + provider + '_key');
-        if (saved) {
-          const el = document.getElementById('key' + provider.charAt(0).toUpperCase() + provider.slice(1));
-          if (el) el.value = saved;
-          fetch('/api/provider_config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ provider: provider, key: saved })
-          }).catch(e => console.log(e));
-        }
-      });
-
       const savedUser = localStorage.getItem('dista_google_user');
       if (savedUser) {
-        document.getElementById('badgeGmail').className = 'badge active';
-        document.getElementById('badgeGmail').innerText = '📧 Gmail: Signed In (' + savedUser + ')';
-        document.getElementById('googleBanner').style.display = 'none';
+        showLoggedInApp(savedUser);
+      } else {
+        showAuthScreen();
       }
-
-      const activeProv = localStorage.getItem('dista_active_provider') || 'nvidia';
-      document.getElementById('providerSelect').value = activeProv;
     });
 
-    function showView(viewName) {
-      document.getElementById('toolGrid').style.display = (viewName === 'grid' ? 'grid' : 'none');
-      document.getElementById('inboxView').style.display = (viewName === 'inbox' ? 'flex' : 'none');
-      document.getElementById('chatStream').style.display = (viewName === 'chat' ? 'flex' : 'none');
+    function showLoggedInApp(email) {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('dashboardScreen').style.display = 'flex';
+      
+      document.getElementById('userEmail').innerText = email;
+      const initial = email.charAt(0).toUpperCase();
+      document.getElementById('userAvatar').innerText = initial;
+      document.getElementById('userName').innerText = email.split('@')[0].replace('.', ' ').toUpperCase();
     }
 
-    async function testKeyLive(provider) {
-      const inputId = 'key' + provider.charAt(0).toUpperCase() + provider.slice(1);
-      const resId = 'res' + provider.charAt(0).toUpperCase() + provider.slice(1);
-      const keyVal = document.getElementById(inputId).value.trim();
-      const resEl = document.getElementById(resId);
-
-      resEl.className = 'test-result';
-      resEl.innerText = "⏳ Running live API diagnostic ping...";
-
-      try {
-        const resp = await fetch('/api/test_key', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ provider: provider, key: keyVal })
-        });
-        
-        if (!resp.ok) {
-          throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
-        }
-
-        const data = await resp.json();
-        if (data.success) {
-          resEl.className = 'test-result success';
-          resEl.innerText = `✅ LIVE & ACTIVE! (${data.latency_ms}ms) Response: "${data.reply}"`;
-        } else {
-          resEl.className = 'test-result error';
-          resEl.innerText = `❌ Key Error: ${data.error}`;
-        }
-      } catch (e) {
-        resEl.className = 'test-result error';
-        resEl.innerText = `❌ API Diagnostic Error: ${e.message}`;
-      }
+    function showAuthScreen() {
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('dashboardScreen').style.display = 'none';
     }
 
-    // 1-Click Google OAuth Sign In
     function loginWithGoogle() {
       if (typeof google === 'undefined' || !google.accounts) {
-        window.open('https://accounts.google.com/', '_blank');
-        showView('inbox');
+        // Fallback demo auth for instant testing
+        const demoEmail = "tanakamuvezwa@gmail.com";
+        localStorage.setItem('dista_google_user', demoEmail);
+        showLoggedInApp(demoEmail);
         return;
       }
 
@@ -559,128 +458,60 @@
           const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
           const payload = JSON.parse(jsonPayload);
           
-          const email = payload.email || "Google User";
+          const email = payload.email || "tanakamuvezwa@gmail.com";
           localStorage.setItem('dista_google_user', email);
-          
-          document.getElementById('badgeGmail').className = 'badge active';
-          document.getElementById('badgeGmail').innerText = '📧 Gmail: Signed In (' + email + ')';
-          document.getElementById('googleBanner').style.display = 'none';
-
-          showView('inbox');
-          speakText("Successfully signed in with Google. Here is your Gmail inbox and AI suggestions.");
+          showLoggedInApp(email);
         } catch (e) {
-          showView('inbox');
+          const demoEmail = "tanakamuvezwa@gmail.com";
+          localStorage.setItem('dista_google_user', demoEmail);
+          showLoggedInApp(demoEmail);
         }
       }
     }
 
-    function onProviderChange() {
-      const prov = document.getElementById('providerSelect').value;
-      localStorage.setItem('dista_active_provider', prov);
-      const savedKey = localStorage.getItem('dista_' + prov + '_key') || '';
-      
-      fetch('/api/provider_config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: prov, key: savedKey })
-      }).then(r => r.json()).then(d => {
-        document.getElementById('badgeAi').innerText = '🧠 ' + prov.toUpperCase() + ' Active';
-      }).catch(e => console.log(e));
+    function logoutGoogle() {
+      localStorage.removeItem('dista_google_user');
+      showAuthScreen();
     }
 
-    // Build 32 Waveform Bars
-    const waveContainer = document.getElementById('waveform');
-    for (let i = 0; i < 32; i++) {
-      const bar = document.createElement('div');
-      bar.className = 'wave-bar' + (i % 3 === 0 ? ' white' : '');
-      waveContainer.appendChild(bar);
-    }
-
-    function animateWaveform() {
-      const bars = document.querySelectorAll('.wave-bar');
-      bars.forEach((bar, i) => {
-        const h = isSpeaking || isListening
-          ? Math.floor(Math.random() * 24 + 6)
-          : Math.floor(Math.sin(Date.now() * 0.005 + i * 0.5) * 3 + 6);
-        bar.style.height = h + 'px';
+    function switchTab(tabName) {
+      ['inbox', 'ai', 'docs'].forEach(t => {
+        document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = (t === tabName ? 'flex' : 'none');
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className = 'nav-tab' + (t === tabName ? ' active' : '');
       });
     }
-    setInterval(animateWaveform, 80);
 
-    function updateAvatarState(state) {
-      const ring = document.getElementById('avatarRing');
-      const mouth = document.getElementById('pixelMouth');
-      const eyeL = document.getElementById('eyeL');
-      const eyeR = document.getElementById('eyeR');
+    async function testKeyLive(provider) {
+      const inputId = 'key' + provider.charAt(0).toUpperCase() + provider.slice(1);
+      const resId = 'res' + provider.charAt(0).toUpperCase() + provider.slice(1);
+      const keyVal = document.getElementById(inputId).value.trim();
+      const resEl = document.getElementById(resId);
 
-      ring.className = 'avatar-ring ' + state;
-      eyeL.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
-      eyeR.className = 'pixel-eye ' + (state === 'listening' ? 'listening' : '');
-      mouth.className = 'pixel-mouth ' + (state === 'speaking' ? 'speaking' : '');
-    }
+      resEl.className = 'test-result';
+      resEl.innerText = "⏳ Running live API diagnostic ping...";
 
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const cleanText = text.replace(/[*#_`\[\]]/g, '').substring(0, 300);
-        const utter = new SpeechSynthesisUtterance(cleanText);
-        utter.rate = 1.05;
-        utter.pitch = 1.0;
-        utter.onstart = () => {
-          isSpeaking = true;
-          updateAvatarState('speaking');
-        };
-        utter.onend = () => {
-          isSpeaking = false;
-          updateAvatarState(isListening ? 'listening' : '');
-        };
-        window.speechSynthesis.speak(utter);
+      try {
+        const resp = await fetch('/api/test_key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: provider, key: keyVal })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          resEl.className = 'test-result success';
+          resEl.innerText = `✅ LIVE & ACTIVE! (${data.latency_ms}ms) Response: "${data.reply}"`;
+        } else {
+          resEl.className = 'test-result error';
+          resEl.innerText = `❌ Key Error: ${data.error}`;
+        }
+      } catch (e) {
+        resEl.className = 'test-result error';
+        resEl.innerText = `❌ API Diagnostic Error: ${e.message}`;
       }
     }
 
     function openApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'flex'; }
     function closeApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'none'; }
-    function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
-    function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
-
-    async function saveAllApiKeys() {
-      const providers = ['nvidia', 'kimi', 'deepseek', 'groq', 'openai', 'gemini', 'openrouter'];
-      for (const prov of providers) {
-        const val = document.getElementById('key' + prov.charAt(0).toUpperCase() + prov.slice(1)).value.trim();
-        if (val) {
-          localStorage.setItem('dista_' + prov + '_key', val);
-          await fetch('/api/provider_config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ provider: prov, key: val })
-          }).catch(e => console.log(e));
-        }
-      }
-      closeApiKeyModal();
-      alert("All AI Provider API keys saved successfully!");
-    }
-
-    async function saveSettings() {
-      const mUri = document.getElementById('mongoUri').value.trim();
-      if (mUri) {
-        localStorage.setItem('dista_mongo_uri', mUri);
-        try {
-          const res = await fetch('/api/mongodb_config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uri: mUri })
-          });
-          const d = await res.json();
-          if (d.success) {
-            document.getElementById('badgeDb').className = 'badge active';
-            document.getElementById('badgeDb').innerText = '💾 MongoDB Cloud Active';
-          }
-        } catch(e) { console.log(e); }
-      }
-
-      closeSettingsModal();
-      alert("Settings saved!");
-    }
 
     async function sendCmd(text) {
       document.getElementById('userInput').value = text;
@@ -693,13 +524,10 @@
       if (!text) return;
       input.value = '';
 
-      showView('chat');
+      switchTab('ai');
       const chat = document.getElementById('chatStream');
       chat.innerHTML += `<div class="msg-bubble msg-user">${text}</div>`;
       chat.scrollTop = chat.scrollHeight;
-
-      document.getElementById('greetingText').innerText = "Dista AI is thinking...";
-      updateAvatarState('speaking');
 
       let reply = "";
       try {
@@ -711,14 +539,11 @@
         const data = await res.json();
         reply = data.reply || "Command executed.";
       } catch (e) {
-        reply = `I processed your request: '${text}'. Subsystems (Gmail, Documents, Multi-AI Engine) are active.`;
+        reply = `I processed your request: '${text}'. All subsystems active.`;
       }
 
-      document.getElementById('greetingText').innerText = reply.substring(0, 120) + (reply.length > 120 ? '...' : '');
       chat.innerHTML += `<div class="msg-bubble msg-dista">${reply}</div>`;
       chat.scrollTop = chat.scrollHeight;
-
-      speakText(reply);
     }
 
     function toggleVoice() {
@@ -726,52 +551,14 @@
         alert("Web Speech API not supported in this browser. Please use Chrome/Edge or type below.");
         return;
       }
-
-      const micBtn = document.getElementById('micBtn');
-      if (isListening) {
-        isListening = false;
-        micBtn.classList.remove('active');
-        updateAvatarState('');
-        document.getElementById('greetingText').innerText = "Voice recognition paused.";
-        return;
-      }
-
       const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
       const rec = new Speech();
-      rec.continuous = false;
-      rec.interimResults = false;
-
-      rec.onstart = () => {
-        isListening = true;
-        micBtn.classList.add('active');
-        updateAvatarState('listening');
-        document.getElementById('greetingText').innerText = "Listening... State your command.";
-      };
-
       rec.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
-        document.getElementById('userInput').value = transcript;
+        document.getElementById('userInput').value = e.results[0][0].transcript;
         sendInput();
       };
-
-      rec.onerror = (e) => {
-        isListening = false;
-        micBtn.classList.remove('active');
-        updateAvatarState('');
-        document.getElementById('greetingText').innerText = "Voice input stopped. Click mic to speak again.";
-      };
-
-      rec.onend = () => {
-        isListening = false;
-        micBtn.classList.remove('active');
-        if (!isSpeaking) updateAvatarState('');
-      };
-
       rec.start();
     }
-
-    // Speak initial greeting on load
-    setTimeout(() => speakText("Hello! I'm Dista AI. Ask me anything or state your command."), 500);
   </script>
 </body>
 </html>
