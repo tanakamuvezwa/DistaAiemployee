@@ -29,10 +29,9 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
             self._send_cors_headers()
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "online", "use_mongo": db_engine.use_mongo}).encode('utf-8'))
+            self.wfile.write(json.dumps({"status": "online", "active_provider": brain.active_provider, "use_mongo": db_engine.use_mongo}).encode('utf-8'))
             return
         
-        # Serve index.html or public assets
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
@@ -66,6 +65,26 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
 
+        elif self.path == '/api/provider_config':
+            try:
+                provider = payload.get('provider', 'auto')
+                key = payload.get('key', '')
+                brain.active_provider = provider
+                os.environ["ACTIVE_AI_PROVIDER"] = provider
+                if key:
+                    brain.set_api_key(provider, key)
+                
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': True, 'message': f'AI Provider set to {provider.upper()}!'}).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self._send_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps({'success': False, 'message': str(e)}).encode('utf-8'))
+
         elif self.path == '/api/gmail_config':
             try:
                 addr = payload.get('address', '')
@@ -86,8 +105,7 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
         elif self.path == '/api/openrouter_config':
             try:
                 key = payload.get('key', '')
-                brain.openrouter_key = key
-                os.environ["OPENROUTER_API_KEY"] = key
+                brain.set_api_key('openrouter', key)
                 
                 self.send_response(200)
                 self._send_cors_headers()

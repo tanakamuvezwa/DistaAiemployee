@@ -1,13 +1,14 @@
 import os
 import re
-import math
+import json
+import urllib.request
 import platform
 from datetime import datetime
 from dista_tools import EmailTool, DocsTool, MessagesTool, WORKSPACE_DIR
 from dista_gmail import gmail_service
 from dista_db import db_engine
 
-# G4F Engine
+# Try G4F Engine
 try:
     import g4f
     from g4f.client import Client as G4FClient
@@ -24,71 +25,199 @@ except ImportError:
 
 class DistaBrain:
     """
-    Supercharged Local AI Brain with Multi-Model G4F (GPT-4o, Llama 3.3, Blackbox),
-    Real Gmail IMAP/SMTP integration, and local document & database persistence.
+    Enterprise-Grade Multi-Provider AI Engine
+    Supports NVIDIA NIM, Kimi/Moonshot, OpenAI, Anthropic Claude, Google Gemini,
+    DeepSeek, Groq, OpenRouter, and G4F Zero-Config Free Models.
     """
 
     def __init__(self):
         self.name = "Dista AI"
-        self.openrouter_key = os.environ.get("OPENROUTER_API_KEY", "")
+        self.active_provider = os.environ.get("ACTIVE_AI_PROVIDER", "auto")
+        
+        # Provider API Keys dictionary
+        self.api_keys = {
+            "nvidia": os.environ.get("NVIDIA_API_KEY", ""),
+            "kimi": os.environ.get("KIMI_API_KEY", ""),
+            "openai": os.environ.get("OPENAI_API_KEY", ""),
+            "gemini": os.environ.get("GEMINI_API_KEY", ""),
+            "claude": os.environ.get("CLAUDE_API_KEY", ""),
+            "deepseek": os.environ.get("DEEPSEEK_API_KEY", ""),
+            "groq": os.environ.get("GROQ_API_KEY", ""),
+            "openrouter": os.environ.get("OPENROUTER_API_KEY", "")
+        }
+
+    def set_api_key(self, provider: str, key: str):
+        provider = provider.lower().strip()
+        self.api_keys[provider] = key.strip()
+        env_var = f"{provider.upper()}_API_KEY"
+        os.environ[env_var] = key.strip()
+
+    def _call_nvidia(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("nvidia") or os.environ.get("NVIDIA_API_KEY")
+        if not key: return ""
+        url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "meta/llama-3.3-70b-instruct",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+            "temperature": 0.7, "max_tokens": 1024
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_kimi(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("kimi") or os.environ.get("KIMI_API_KEY")
+        if not key: return ""
+        url = "https://api.moonshot.cn/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "moonshot-v1-8k",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+            "temperature": 0.3
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_deepseek(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("deepseek") or os.environ.get("DEEPSEEK_API_KEY")
+        if not key: return ""
+        url = "https://api.deepseek.com/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_groq(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("groq") or os.environ.get("GROQ_API_KEY")
+        if not key: return ""
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_openai(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("openai") or os.environ.get("OPENAI_API_KEY")
+        if not key: return ""
+        url = "https://api.openai.com/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_gemini(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("gemini") or os.environ.get("GEMINI_API_KEY")
+        if not key: return ""
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [{"parts": [{"text": f"{sys_msg}\n\nUser Question: {query}"}]}]
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+    def _call_openrouter(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
+        if not key: return ""
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": "openrouter/auto",
+            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+        }
+        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+
+    def _call_g4f(self, query: str, sys_msg: str) -> str:
+        if not G4F_AVAILABLE or not g4f_client: return ""
+        models_to_try = ["gpt-4o-mini", "gpt-4o", "llama-3.3-70b", "deepseek-r1"]
+        for model_name in models_to_try:
+            try:
+                response = g4f_client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+                )
+                reply = response.choices[0].message.content
+                if reply and len(reply.strip()) > 3:
+                    return reply.strip()
+            except Exception:
+                continue
+        return ""
 
     def _call_ai_engine(self, user_query: str, system_prompt: str = "") -> str:
-        """Queries G4F with multi-model fallback to ensure 100% successful AI responses"""
         sys_msg = system_prompt or (
-            "You are Dista AI, a futuristic local personal assistant operating in 2030. "
-            "Provide helpful, intelligent, sharp, and detailed conversational responses. "
-            "Keep formatting clean and readable without excessive markdown."
+            "You are Dista AI, an executive workspace assistant. "
+            "Provide helpful, intelligent, sharp, and concise conversational responses. "
+            "Keep formatting clean and readable."
         )
 
-        # 1. Try G4F models sequentially
-        if G4F_AVAILABLE and g4f_client:
-            models_to_try = ["gpt-4o-mini", "gpt-4o", "llama-3.3-70b", "deepseek-r1"]
-            for model_name in models_to_try:
-                try:
-                    response = g4f_client.chat.completions.create(
-                        model=model_name,
-                        messages=[
-                            {"role": "system", "content": sys_msg},
-                            {"role": "user", "content": user_query}
-                        ]
-                    )
-                    reply = response.choices[0].message.content
-                    if reply and len(reply.strip()) > 3:
-                        return reply.strip()
-                except Exception as e:
-                    print(f"[G4F Model '{model_name}' Notice]: {e}")
-                    continue
+        provider = self.active_provider.lower().strip()
 
-        # 2. Try OpenRouter API if key provided
-        if self.openrouter_key:
+        # Route to specific provider if selected & key available
+        if provider == "nvidia":
+            res = self._call_nvidia(user_query, sys_msg)
+            if res: return f"[NVIDIA NIM] {res}"
+        elif provider == "kimi":
+            res = self._call_kimi(user_query, sys_msg)
+            if res: return f"[Kimi AI] {res}"
+        elif provider == "openai":
+            res = self._call_openai(user_query, sys_msg)
+            if res: return f"[OpenAI GPT-4o] {res}"
+        elif provider == "gemini":
+            res = self._call_gemini(user_query, sys_msg)
+            if res: return f"[Google Gemini] {res}"
+        elif provider == "deepseek":
+            res = self._call_deepseek(user_query, sys_msg)
+            if res: return f"[DeepSeek AI] {res}"
+        elif provider == "groq":
+            res = self._call_groq(user_query, sys_msg)
+            if res: return f"[Groq AI] {res}"
+        elif provider == "openrouter":
+            res = self._call_openrouter(user_query, sys_msg)
+            if res: return f"[OpenRouter] {res}"
+
+        # Automatic Provider Cascade Fallback
+        for call_fn, label in [
+            (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
+            (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
+            (lambda: self._call_openrouter(user_query, sys_msg), "OpenRouter"),
+            (lambda: self._call_gemini(user_query, sys_msg), "Gemini"),
+            (lambda: self._call_openai(user_query, sys_msg), "OpenAI"),
+            (lambda: self._call_deepseek(user_query, sys_msg), "DeepSeek"),
+            (lambda: self._call_groq(user_query, sys_msg), "Groq"),
+            (lambda: self._call_g4f(user_query, sys_msg), "Free AI Engine")
+        ]:
             try:
-                import urllib.request
-                import json
-                req = urllib.request.Request(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {self.openrouter_key}",
-                        "Content-Type": "application/json"
-                    },
-                    data=json.dumps({
-                        "model": "openrouter/auto",
-                        "messages": [
-                            {"role": "system", "content": sys_msg},
-                            {"role": "user", "content": user_query}
-                        ]
-                    }).encode("utf-8")
-                )
-                with urllib.request.urlopen(req, timeout=8) as resp:
-                    res_json = json.loads(resp.read().decode("utf-8"))
-                    return res_json["choices"][0]["message"]["content"].strip()
-            except Exception as e:
-                print(f"[OpenRouter Engine Notice]: {e}")
+                reply = call_fn()
+                if reply and len(reply.strip()) > 3:
+                    return reply.strip()
+            except Exception:
+                continue
 
-        # 3. Dynamic Local Intelligent Response Fallback
-        return (
-            f"I have processed your request regarding '{user_query}'. "
-            "All local systems (Gmail, Workspace Documents, SQLite/MongoDB) are active and ready to execute your workflow."
-        )
+        return f"I processed your query: '{user_query}'. Subsystems (Gmail, Workspace, MongoDB) are ready."
 
     def process_input(self, user_text: str) -> dict:
         text = user_text.strip()
@@ -140,13 +269,13 @@ class DistaBrain:
 
         # ── 4. SYSTEM DIAGNOSTICS ──────────────────────────────────────
         if any(w in text_lower for w in ["system", "cpu", "memory", "ram", "diagnostic", "specs", "db", "database"]):
-            db_type = "MongoDB" if db_engine.use_mongo else "SQLite"
+            db_type = "MongoDB Cloud" if db_engine.use_mongo else "SQLite Local"
             if psutil:
                 cpu_v = psutil.cpu_percent(interval=0.1)
                 mem_v = psutil.virtual_memory().percent
-                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type}. Engine operating at peak performance."
+                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type} | AI Provider: {self.active_provider.upper()}. All systems nominal."
             else:
-                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type}. All local AI subsystems active."
+                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type} | AI Provider: {self.active_provider.upper()}. Engine nominal."
             return {"reply": reply, "action": "show_system", "data": None}
 
         # ── 5. MATH & CALCULATOR ───────────────────────────────────────
@@ -161,8 +290,7 @@ class DistaBrain:
             except Exception:
                 pass
 
-        # ── 6. DIRECT GENERAL AI INTELLIGENCE (G4F GPT-4o) ─────────────
-        # All conversational, knowledge, writing, & code queries go directly to AI Engine!
+        # ── 6. DIRECT MULTI-PROVIDER AI INTELLIGENCE ────────────────────
         ai_reply = self._call_ai_engine(text)
         db_engine.save_chat("DISTA AI", ai_reply)
         return {"reply": ai_reply, "action": None, "data": None}

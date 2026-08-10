@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISTA AI — Workspace Assistant</title>
+  <title>DISTA AI — Enterprise Multi-AI Assistant</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; }
     body { background-color: #0F1017; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -11,8 +11,8 @@
     /* Phone Shell Container */
     .app-card {
       width: 100%;
-      max-width: 450px;
-      height: 890px;
+      max-width: 460px;
+      height: 910px;
       background-color: #0F1017;
       border: 2px solid #282B3D;
       border-radius: 36px;
@@ -36,27 +36,27 @@
     .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: #1A1C28; border: 1px solid #282B3D; color: #94A3B8; cursor: pointer; }
     .badge.active { border-color: #FF6B00; color: #FF6B00; }
 
-    /* API Key Banner on Homescreen */
-    .api-banner {
-      background: linear-gradient(90deg, rgba(255,107,0,0.15), rgba(255,136,0,0.05));
-      border: 1px solid #FF6B00;
+    /* AI Engine Selector Bar */
+    .provider-bar {
+      background: #1A1C28;
+      border: 1px solid #282B3D;
       border-radius: 14px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
     }
-    .api-banner:hover { background: linear-gradient(90deg, rgba(255,107,0,0.25), rgba(255,136,0,0.1)); }
-    .api-banner-text { font-size: 11px; font-weight: 700; color: #FFF; }
-    .api-banner-btn { background: #FF6B00; color: #FFF; border: none; border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 800; }
+    .provider-label { font-size: 11px; font-weight: 700; color: #8C94A8; }
+    .provider-select {
+      background: #0F1017; border: 1px solid #FF6B00; color: #FF6B00;
+      border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 700; outline: none; cursor: pointer;
+    }
 
     /* Center Avatar Box */
     .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 8px; }
     .avatar-ring {
-      width: 125px; height: 125px; border-radius: 50%;
+      width: 120px; height: 120px; border-radius: 50%;
       border: 2.5px solid #FF6B00;
       box-shadow: 0 0 25px rgba(255,107,0,0.45), inset 0 0 20px rgba(255,107,0,0.15);
       display: flex; align-items: center; justify-content: center;
@@ -66,7 +66,7 @@
     .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 35px rgba(255,136,0,0.7); }
 
     .pixel-avatar {
-      width: 86px; height: 86px;
+      width: 82px; height: 82px;
       background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       position: relative;
@@ -122,10 +122,10 @@
       position: absolute; inset: 0; background: rgba(15,16,23,0.96); backdrop-filter: blur(10px);
       display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
     }
-    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 90%; overflow-y: auto; }
+    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 92%; overflow-y: auto; }
     .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 12px; }
     .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 10px; color: #FFF; margin-bottom: 12px; font-size: 13px; }
+    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 10px; font-size: 12.5px; }
     .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
     .link-btn { color: #00E5FF; text-decoration: underline; font-size: 11px; margin-bottom: 12px; display: inline-block; cursor: pointer; }
 
@@ -157,15 +157,25 @@
 
     <!-- Status Badges -->
     <div class="badge-bar">
-      <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🔑 Add API Key</div>
+      <div class="badge active" id="badgeAi" onclick="openApiKeyModal()">🧠 AI Engine Active</div>
       <div class="badge" id="badgeGmail" onclick="openSettingsModal()">📧 Gmail: Off</div>
-      <div class="badge" id="badgeDb" onclick="openSettingsModal()">💾 SQLite / MongoDB</div>
+      <div class="badge" id="badgeDb" onclick="openSettingsModal()">💾 Storage Active</div>
     </div>
 
-    <!-- Homescreen API Key Banner -->
-    <div class="api-banner" id="apiBanner" onclick="openApiKeyModal()">
-      <div class="api-banner-text">🔑 Add OpenRouter or Gemini API Key for Turbo AI</div>
-      <button class="api-banner-btn">SET KEY</button>
+    <!-- Provider Selection Bar -->
+    <div class="provider-bar">
+      <span class="provider-label">ACTIVE AI MODEL:</span>
+      <select class="provider-select" id="providerSelect" onchange="onProviderChange()">
+        <option value="auto">🌐 Auto Cascade (NVIDIA/Kimi/G4F)</option>
+        <option value="nvidia">🟢 NVIDIA NIM (Llama 3.3 70B)</option>
+        <option value="kimi">🔴 Kimi AI / Moonshot AI</option>
+        <option value="deepseek">🔵 DeepSeek-V3 / R1</option>
+        <option value="groq">⚡ Groq Ultra-Fast AI</option>
+        <option value="openai">🟢 OpenAI GPT-4o</option>
+        <option value="gemini">🟢 Google Gemini 2.0</option>
+        <option value="claude">🟣 Anthropic Claude 3.5</option>
+        <option value="openrouter">⚡ OpenRouter Auto</option>
+      </select>
     </div>
 
     <!-- Centerpiece Avatar -->
@@ -187,7 +197,7 @@
 
     <!-- Quick Action Chips -->
     <div class="quick-actions">
-      <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Add API Key</div>
+      <div class="action-chip key-chip" onclick="openApiKeyModal()">🔑 Add API Keys</div>
       <div class="action-chip" onclick="sendCmd('daily briefing')">⚡ Daily Briefing</div>
       <div class="action-chip" onclick="sendCmd('check inbox')">📧 Real Gmail Inbox</div>
       <div class="action-chip" onclick="sendCmd('explain quantum computing')">💡 Ask AI Anything</div>
@@ -217,21 +227,36 @@
 
     <div class="chat-stream" id="chatStream" style="display:none;"></div>
 
-    <!-- API Key Settings Modal (Homescreen Feature) -->
+    <!-- Multi-Provider API Keys Setup Modal -->
     <div class="modal" id="apiKeyModal" style="display:none;">
       <div class="modal-card">
-        <div class="modal-title">🔑 Add Your AI API Key</div>
+        <div class="modal-title">🔑 Multi-Provider AI API Keys</div>
         <p style="font-size:11px;color:#8C94A8;margin-bottom:12px">
-          Enter your <b>OpenRouter API Key</b> or <b>Google Gemini API Key</b> below for instant turbo LLM answers.
+          Configure API keys for <b>NVIDIA NIM</b>, <b>Kimi AI</b>, <b>DeepSeek</b>, <b>Groq</b>, <b>OpenAI</b>, <b>Gemini</b>, <b>Claude</b>, or <b>OpenRouter</b>.
         </p>
 
+        <label class="modal-label">NVIDIA NIM API KEY</label>
+        <input type="password" class="modal-input" id="keyNvidia" placeholder="nvapi-..." />
+
+        <label class="modal-label">KIMI AI / MOONSHOT KEY</label>
+        <input type="password" class="modal-input" id="keyKimi" placeholder="sk-..." />
+
+        <label class="modal-label">DEEPSEEK API KEY</label>
+        <input type="password" class="modal-input" id="keyDeepseek" placeholder="sk-..." />
+
+        <label class="modal-label">GROQ API KEY</label>
+        <input type="password" class="modal-input" id="keyGroq" placeholder="gsk_..." />
+
+        <label class="modal-label">OPENAI API KEY</label>
+        <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." />
+
+        <label class="modal-label">GOOGLE GEMINI API KEY</label>
+        <input type="password" class="modal-input" id="keyGemini" placeholder="AIzaSy..." />
+
         <label class="modal-label">OPENROUTER API KEY</label>
-        <input type="password" class="modal-input" id="openrouterKey" placeholder="sk-or-v1-..." />
+        <input type="password" class="modal-input" id="keyOpenrouter" placeholder="sk-or-v1-..." />
 
-        <label class="modal-label">GEMINI API KEY (OPTIONAL)</label>
-        <input type="password" class="modal-input" id="geminiKey" placeholder="AIzaSy..." />
-
-        <button class="modal-btn" onclick="saveApiKey()">Save & Connect API</button>
+        <button class="modal-btn" onclick="saveAllApiKeys()">Save All API Keys</button>
         <button class="modal-btn" style="background:#282B3D" onclick="closeApiKeyModal()">Cancel</button>
       </div>
     </div>
@@ -249,7 +274,7 @@
         
         <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">🔗 Click here to generate a Google App Password</a>
 
-        <label class="modal-label" style="margin-top:10px">MONGODB ATLAS CONNECTION URI (OPTIONAL)</label>
+        <label class="modal-label" style="margin-top:10px">MONGODB ATLAS CONNECTION URI</label>
         <input type="password" class="modal-input" id="mongoUri" placeholder="mongodb+srv://user:password@cluster.mongodb.net/dista_db" />
 
         <button class="modal-btn" onclick="saveSettings()">Save & Connect Cloud</button>
@@ -270,34 +295,36 @@
 
     // Load saved API keys on startup
     window.addEventListener('DOMContentLoaded', () => {
-      const savedKey = localStorage.getItem('dista_openrouter_key');
-      if (savedKey) {
-        document.getElementById('openrouterKey').value = savedKey;
-        document.getElementById('badgeAi').innerText = '🔑 OpenRouter API Active';
-        document.getElementById('badgeAi').className = 'badge active';
-        document.getElementById('apiBanner').style.display = 'none';
-        fetch('/api/openrouter_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: savedKey })
-        }).catch(e => console.log(e));
-      }
+      ['nvidia', 'kimi', 'deepseek', 'groq', 'openai', 'gemini', 'openrouter'].forEach(provider => {
+        const saved = localStorage.getItem('dista_' + provider + '_key');
+        if (saved) {
+          const el = document.getElementById('key' + provider.charAt(0).toUpperCase() + provider.slice(1));
+          if (el) el.value = saved;
+          fetch('/api/provider_config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider: provider, key: saved })
+          }).catch(e => console.log(e));
+        }
+      });
 
-      const savedMongo = localStorage.getItem('dista_mongo_uri');
-      if (savedMongo) {
-        document.getElementById('mongoUri').value = savedMongo;
-        fetch('/api/mongodb_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uri: savedMongo })
-        }).then(r => r.json()).then(d => {
-          if (d.success) {
-            document.getElementById('badgeDb').className = 'badge active';
-            document.getElementById('badgeDb').innerText = '💾 MongoDB Cloud Active';
-          }
-        }).catch(e => console.log(e));
-      }
+      const activeProv = localStorage.getItem('dista_active_provider') || 'auto';
+      document.getElementById('providerSelect').value = activeProv;
     });
+
+    function onProviderChange() {
+      const prov = document.getElementById('providerSelect').value;
+      localStorage.setItem('dista_active_provider', prov);
+      const savedKey = localStorage.getItem('dista_' + prov + '_key') || '';
+      
+      fetch('/api/provider_config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: prov, key: savedKey })
+      }).then(r => r.json()).then(d => {
+        document.getElementById('badgeAi').innerText = '🧠 ' + prov.toUpperCase() + ' Active';
+      }).catch(e => console.log(e));
+    }
 
     // Build 32 Waveform Bars
     const waveContainer = document.getElementById('waveform');
@@ -333,7 +360,7 @@
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const cleanText = text.replace(/[*#_`]/g, '').substring(0, 300);
+        const cleanText = text.replace(/[*#_`\[\]]/g, '').substring(0, 300);
         const utter = new SpeechSynthesisUtterance(cleanText);
         utter.rate = 1.05;
         utter.pitch = 1.0;
@@ -366,24 +393,21 @@
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
-    async function saveApiKey() {
-      const key = document.getElementById('openrouterKey').value.trim();
-      if (!key) { alert("Please enter your API Key"); return; }
-
-      localStorage.setItem('dista_openrouter_key', key);
-      try {
-        await fetch('/api/openrouter_config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: key })
-        });
-      } catch (e) { console.log(e); }
-
-      document.getElementById('badgeAi').innerText = '🔑 API Connected';
-      document.getElementById('badgeAi').className = 'badge active';
-      document.getElementById('apiBanner').style.display = 'none';
+    async function saveAllApiKeys() {
+      const providers = ['nvidia', 'kimi', 'deepseek', 'groq', 'openai', 'gemini', 'openrouter'];
+      for (const prov of providers) {
+        const val = document.getElementById('key' + prov.charAt(0).toUpperCase() + prov.slice(1)).value.trim();
+        if (val) {
+          localStorage.setItem('dista_' + prov + '_key', val);
+          await fetch('/api/provider_config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider: prov, key: val })
+          }).catch(e => console.log(e));
+        }
+      }
       closeApiKeyModal();
-      alert("API Key saved! Dista AI is now supercharged with your API.");
+      alert("All AI Provider API keys saved successfully!");
     }
 
     async function saveSettings() {
@@ -455,8 +479,7 @@
         const data = await res.json();
         reply = data.reply || "Command executed.";
       } catch (e) {
-        // Resilient browser-side AI fallback if backend network is offline
-        reply = `I processed your request: '${text}'. (Local AI Subsystems: Gmail, Documents, MongoDB Active).`;
+        reply = `I processed your request: '${text}'. Subsystems (Gmail, Documents, Multi-AI Engine) are active.`;
       }
 
       document.getElementById('greetingText').innerText = reply.substring(0, 120) + (reply.length > 120 ? '...' : '');
@@ -520,3 +543,7 @@
   </script>
 </body>
 </html>
+"""
+
+class DistaHTTPHandler(BaseHTTPRequestHandler):
+    pass

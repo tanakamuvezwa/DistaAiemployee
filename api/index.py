@@ -15,8 +15,7 @@ brain = DistaBrain()
 class handler(BaseHTTPRequestHandler):
     """
     Vercel Serverless Python Function Handler
-    Handles API endpoints: /api/chat, /api/gmail_config, /api/openrouter_config, /api/mongodb_config
-    Includes CORS headers for seamless web requests.
+    Handles API endpoints: /api/chat, /api/gmail_config, /api/openrouter_config, /api/provider_config, /api/mongodb_config
     """
 
     def _send_cors_headers(self):
@@ -36,8 +35,8 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         response_data = {
             "status": "online",
-            "service": "DISTA AI Vercel Serverless Backend",
-            "version": "2.0.0",
+            "service": "DISTA AI Multi-Provider Backend",
+            "active_provider": brain.active_provider,
             "use_mongo": db_engine.use_mongo
         }
         self.wfile.write(json.dumps(response_data).encode('utf-8'))
@@ -67,6 +66,20 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
 
+        elif path.endswith('/provider_config') or '/api/provider_config' in path:
+            provider = payload.get('provider', 'auto')
+            key = payload.get('key', '')
+            brain.active_provider = provider
+            os.environ["ACTIVE_AI_PROVIDER"] = provider
+            if key:
+                brain.set_api_key(provider, key)
+            
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True, 'message': f'AI Provider set to {provider.upper()}!'}).encode('utf-8'))
+
         elif path.endswith('/gmail_config') or '/api/gmail_config' in path:
             addr = payload.get('address', '')
             passwd = payload.get('password', '')
@@ -80,14 +93,13 @@ class handler(BaseHTTPRequestHandler):
 
         elif path.endswith('/openrouter_config') or '/api/openrouter_config' in path:
             key = payload.get('key', '')
-            brain.openrouter_key = key
-            os.environ["OPENROUTER_API_KEY"] = key
+            brain.set_api_key('openrouter', key)
             
             self.send_response(200)
             self._send_cors_headers()
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({'success': True, 'message': 'API Key configured!'}).encode('utf-8'))
+            self.wfile.write(json.dumps({'success': True, 'message': 'OpenRouter API Key configured!'}).encode('utf-8'))
 
         elif path.endswith('/mongodb_config') or '/api/mongodb_config' in path:
             uri = payload.get('uri', '')
