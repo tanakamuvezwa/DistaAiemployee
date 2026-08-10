@@ -29,7 +29,19 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            if self.path.startswith('/api/'):
+            if '/api/emails' in self.path:
+                if gmail_service.is_configured():
+                    emails = gmail_service.fetch_unread_emails(max_results=10)
+                else:
+                    emails = EmailTool.get_unread_emails()
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "emails": emails}).encode('utf-8'))
+                return
+
+            elif self.path.startswith('/api/'):
                 self.send_response(200)
                 self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')
@@ -72,6 +84,17 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(result).encode('utf-8'))
+
+            elif '/api/emails' in self.path:
+                if gmail_service.is_configured():
+                    emails = gmail_service.fetch_unread_emails(max_results=10)
+                else:
+                    emails = EmailTool.get_unread_emails()
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "emails": emails}).encode('utf-8'))
 
             elif self.path == '/api/test_key':
                 provider = payload.get('provider', 'nvidia')

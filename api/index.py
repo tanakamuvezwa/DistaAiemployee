@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dista_brain import DistaBrain
 from dista_gmail import gmail_service
+from dista_tools import EmailTool
 from dista_db import db_engine
 
 brain = DistaBrain()
@@ -15,7 +16,7 @@ brain = DistaBrain()
 class handler(BaseHTTPRequestHandler):
     """
     Vercel Serverless Python Function Handler
-    Handles API endpoints: /api/chat, /api/test_key, /api/provider_config, /api/gmail_config, /api/mongodb_config
+    Handles API endpoints: /api/chat, /api/test_key, /api/emails, /api/provider_config, /api/gmail_config, /api/mongodb_config
     """
 
     def _send_cors_headers(self):
@@ -33,12 +34,21 @@ class handler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        response_data = {
-            "status": "online",
-            "service": "DISTA AI Multi-Provider Backend",
-            "active_provider": brain.active_provider,
-            "use_mongo": db_engine.use_mongo
-        }
+        
+        path = self.path
+        if path.endswith('/emails') or '/api/emails' in path:
+            if gmail_service.is_configured():
+                emails = gmail_service.fetch_unread_emails(max_results=10)
+            else:
+                emails = EmailTool.get_unread_emails()
+            response_data = {"success": True, "emails": emails}
+        else:
+            response_data = {
+                "status": "online",
+                "service": "DISTA AI Multi-Provider Backend",
+                "active_provider": brain.active_provider,
+                "use_mongo": db_engine.use_mongo
+            }
         self.wfile.write(json.dumps(response_data).encode('utf-8'))
 
     def do_POST(self):
@@ -65,6 +75,18 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
+
+        elif path.endswith('/emails') or '/api/emails' in path:
+            if gmail_service.is_configured():
+                emails = gmail_service.fetch_unread_emails(max_results=10)
+            else:
+                emails = EmailTool.get_unread_emails()
+            
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "emails": emails}).encode('utf-8'))
 
         elif path.endswith('/test_key') or '/api/test_key' in path:
             provider = payload.get('provider', 'nvidia')
