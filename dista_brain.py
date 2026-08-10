@@ -2,6 +2,7 @@ import os
 import re
 import json
 import urllib.request
+import urllib.error
 import platform
 from datetime import datetime
 from dista_tools import EmailTool, DocsTool, MessagesTool, WORKSPACE_DIR
@@ -25,7 +26,7 @@ except ImportError:
 
 class DistaBrain:
     """
-    Enterprise-Grade Multi-Provider AI Engine
+    Enterprise-Grade Multi-Provider AI Engine with Robust 401/403/429 Exception Failover.
     Supports NVIDIA NIM, Kimi/Moonshot, OpenAI, Anthropic Claude, Google Gemini,
     DeepSeek, Groq, OpenRouter, and G4F Zero-Config Free Models.
     """
@@ -55,101 +56,129 @@ class DistaBrain:
     def _call_nvidia(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("nvidia") or os.environ.get("NVIDIA_API_KEY")
         if not key: return ""
-        url = "https://integrate.api.nvidia.com/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "meta/llama-3.3-70b-instruct",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
-            "temperature": 0.7, "max_tokens": 1024
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://integrate.api.nvidia.com/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "meta/llama-3.3-70b-instruct",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+                "temperature": 0.7, "max_tokens": 1024
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[NVIDIA NIM Notice]: {e}")
+            return ""
 
     def _call_kimi(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("kimi") or os.environ.get("KIMI_API_KEY")
         if not key: return ""
-        url = "https://api.moonshot.cn/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "moonshot-v1-8k",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
-            "temperature": 0.3
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://api.moonshot.cn/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "moonshot-v1-8k",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+                "temperature": 0.3
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[Kimi AI Notice]: {e}")
+            return ""
 
     def _call_deepseek(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("deepseek") or os.environ.get("DEEPSEEK_API_KEY")
         if not key: return ""
-        url = "https://api.deepseek.com/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://api.deepseek.com/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "deepseek-chat",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[DeepSeek Notice]: {e}")
+            return ""
 
     def _call_groq(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("groq") or os.environ.get("GROQ_API_KEY")
         if not key: return ""
-        url = "https://api.groq.com/openai/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "llama-3.3-70b-versatile",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[Groq Notice]: {e}")
+            return ""
 
     def _call_openai(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("openai") or os.environ.get("OPENAI_API_KEY")
         if not key: return ""
-        url = "https://api.openai.com/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "gpt-4o-mini",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "gpt-4o-mini",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[OpenAI Notice]: {e}")
+            return ""
 
     def _call_gemini(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("gemini") or os.environ.get("GEMINI_API_KEY")
         if not key: return ""
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{"parts": [{"text": f"{sys_msg}\n\nUser Question: {query}"}]}]
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
+            headers = {"Content-Type": "application/json"}
+            payload = {
+                "contents": [{"parts": [{"text": f"{sys_msg}\n\nUser Question: {query}"}]}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except Exception as e:
+            print(f"[Gemini Notice]: {e}")
+            return ""
 
     def _call_openrouter(self, query: str, sys_msg: str) -> str:
         key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
         if not key: return ""
-        url = "https://openrouter.ai/api/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        payload = {
-            "model": "openrouter/auto",
-            "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
-        }
-        req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"].strip()
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "openrouter/auto",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[OpenRouter Notice]: {e}")
+            return ""
 
     def _call_g4f(self, query: str, sys_msg: str) -> str:
         if not G4F_AVAILABLE or not g4f_client: return ""
@@ -201,10 +230,10 @@ class DistaBrain:
 
         # Automatic Provider Cascade Fallback
         for call_fn, label in [
-            (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
-            (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
             (lambda: self._call_openrouter(user_query, sys_msg), "OpenRouter"),
             (lambda: self._call_gemini(user_query, sys_msg), "Gemini"),
+            (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
+            (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
             (lambda: self._call_openai(user_query, sys_msg), "OpenAI"),
             (lambda: self._call_deepseek(user_query, sys_msg), "DeepSeek"),
             (lambda: self._call_groq(user_query, sys_msg), "Groq"),
