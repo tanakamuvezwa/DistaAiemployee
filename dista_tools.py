@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+import csv
 from datetime import datetime
 
 # Detect if running in Vercel or read-only serverless environment
@@ -25,7 +26,6 @@ def get_db_connection():
         conn = sqlite3.connect(DB_PATH)
         return conn
     except Exception:
-        # Fallback to in-memory database on read-only filesystems
         conn = sqlite3.connect(":memory:")
         return conn
 
@@ -60,37 +60,24 @@ def init_db():
         """)
         conn.commit()
 
-        # Seed sample mock data if empty
+        # Seed sample mock data only if empty
         cur.execute("SELECT COUNT(*) FROM emails")
         if cur.fetchone()[0] == 0:
             sample_emails = [
-                ("sarah@techcorp.com", "Q3 Product Roadmap Review", "Hi team, please review the Q3 roadmap draft before our 2 PM sync.", "HIGH", "Today, 09:15 AM", 0),
-                ("alex.dev@company.com", "API Integration Update", "The OAuth 2.0 endpoints are now live on staging. Let me know if you run into any issues.", "NORMAL", "Yesterday, 04:30 PM", 0),
-                ("alerts@github.com", "[GitHub] Security advisory for PyQt6", "A security vulnerability was identified in one of your repository dependencies.", "ACTION", "2 days ago", 0),
+                ("sarah.jenkins@techcorp.com", "Q3 Strategic AI Integration & Budget Review", "Hi Tanaka,\n\nPlease review the attached Q3 roadmap and budget allocation spreadsheet. We need your sign-off before 5 PM today for production deployment.\n\nBest,\nSarah Jenkins", "HIGH", "09:15 AM", 0),
+                ("alex.rivera@devops.org", "NVIDIA NIM & DeepSeek Latency Benchmark Live", "Hey Tanaka,\n\nThe multi-provider LLM latency benchmark report is complete. Llama 3.3 70B is clocking 142ms average response time.\n\nRegards,\nAlex", "NORMAL", "Yesterday, 04:30 PM", 0),
+                ("security@github.com", "[Security Alert] New OAuth 2.0 Token Issued", "A new OAuth token was authorized for Dista AI Executive Assistant on your Google Account.", "ACTION", "2 days ago", 0),
             ]
             cur.executemany("""
                 INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, sample_emails)
 
-        cur.execute("SELECT COUNT(*) FROM messages")
-        if cur.fetchone()[0] == 0:
-            sample_messages = [
-                ("Jordan Miller", "Hey! Did you check the latest pull request?", "inbound", "10:42 AM"),
-                ("Jordan Miller", "Looks great, merging now.", "outbound", "10:45 AM"),
-                ("Elena Rostova", "Don't forget the demo call at 3 PM today.", "inbound", "11:15 AM")
-            ]
-            cur.executemany("""
-                INSERT INTO messages (contact, message, direction, timestamp)
-                VALUES (?, ?, ?, ?)
-            """, sample_messages)
-
         conn.commit()
         conn.close()
     except Exception as e:
         print(f"[Init DB Notice]: {e}")
 
-# Run init
 init_db()
 
 class EmailTool:
@@ -107,6 +94,22 @@ class EmailTool:
             return []
 
     @staticmethod
+    def add_email(sender: str, subject: str, body: str, priority: str = "NORMAL"):
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            timestamp = datetime.now().strftime("%I:%M %p")
+            cur.execute("""
+                INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
+                VALUES (?, ?, ?, ?, ?, 0)
+            """, (sender, subject, body, priority, timestamp))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception:
+            return False
+
+    @staticmethod
     def get_all_emails():
         try:
             conn = get_db_connection()
@@ -118,32 +121,24 @@ class EmailTool:
         except Exception:
             return []
 
-    @staticmethod
-    def draft_reply(to_address: str, subject: str, body_text: str):
-        timestamp = datetime.now().strftime("%I:%M %p")
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (f"Me -> {to_address}", f"Re: {subject}", body_text, "DRAFT", timestamp, 1))
-            conn.commit()
-            conn.close()
-            return f"Draft saved to local database for {to_address}."
-        except Exception as e:
-            return f"Draft notice: {e}"
-
 class DocsTool:
     @staticmethod
     def list_documents():
         try:
             if not os.path.exists(WORKSPACE_DIR):
-                return ["sample_notes.md"]
-            files = [f for f in os.listdir(WORKSPACE_DIR) if f.endswith(('.md', '.txt'))]
-            return files if files else ["sample_notes.md"]
+                return []
+            files = []
+            for f in os.listdir(WORKSPACE_DIR):
+                file_path = os.path.join(WORKSPACE_DIR, f)
+                if os.path.isfile(file_path):
+                    size = os.path.getsize(file_path)
+                    mod_time = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime("%Y-%m-%d %H:%M")
+                    ext = os.path.splitext(f)[1].lower()
+                    doc_type = "Spreadsheet (CSV)" if ext == ".csv" else ("Markdown Note" if ext == ".md" else "Document")
+                    files.append({"filename": f, "size": f"{size} B", "modified": mod_time, "type": doc_type})
+            return files
         except Exception:
-            return ["sample_notes.md"]
+            return []
 
     @staticmethod
     def read_document(filename: str):
@@ -152,9 +147,9 @@ class DocsTool:
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     return f.read()
-            except Exception:
-                pass
-        return f"# Sample Workspace Note ({filename})\n\nDista AI Workspace is active."
+            except Exception as e:
+                return f"Error reading document: {e}"
+        return f"# File Not Found ({filename})"
 
     @staticmethod
     def create_document(filename: str, content: str):
@@ -163,37 +158,37 @@ class DocsTool:
             file_path = os.path.join(WORKSPACE_DIR, filename)
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
-            return f"Document '{filename}' created in workspace."
+            return True
         except Exception as e:
-            return f"Note created in memory workspace: {filename}"
+            print(f"[Create Doc Notice]: {e}")
+            return False
 
     @staticmethod
-    def summarize_text(text: str):
-        lines = [line.strip() for line in text.split('\n') if line.strip() and not line.startswith('#')]
-        return ' '.join(lines[:3]) if lines else "Document content is empty."
+    def create_spreadsheet(filename: str, rows_data: list):
+        """Creates a CSV Excel spreadsheet file in workspace"""
+        try:
+            if not filename.endswith('.csv'):
+                filename += '.csv'
+            os.makedirs(WORKSPACE_DIR, exist_ok=True)
+            file_path = os.path.join(WORKSPACE_DIR, filename)
+            with open(file_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                for row in rows_data:
+                    writer.writerow(row)
+            return True
+        except Exception as e:
+            print(f"[Create CSV Notice]: {e}")
+            return False
 
 class MessagesTool:
     @staticmethod
-    def get_recent_messages():
+    def get_messages():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute("SELECT contact, message, direction, timestamp FROM messages ORDER BY id DESC LIMIT 10")
+            cur.execute("SELECT id, contact, message, direction, timestamp FROM messages ORDER BY id DESC")
             rows = cur.fetchall()
             conn.close()
-            return [{"contact": r[0], "message": r[1], "direction": r[2], "timestamp": r[3]} for r in rows]
+            return [{"id": r[0], "contact": r[1], "message": r[2], "direction": r[3], "timestamp": r[4]} for r in rows]
         except Exception:
             return []
-
-    @staticmethod
-    def send_message(contact: str, text: str):
-        timestamp = datetime.now().strftime("%I:%M %p")
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("INSERT INTO messages (contact, message, direction, timestamp) VALUES (?, ?, ?, ?)", (contact, text, "outbound", timestamp))
-            conn.commit()
-            conn.close()
-            return f"Message sent to {contact}."
-        except Exception as e:
-            return f"Message sent to {contact}."

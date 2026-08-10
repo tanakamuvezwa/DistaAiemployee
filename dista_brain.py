@@ -11,7 +11,7 @@ from dista_tools import EmailTool, DocsTool, MessagesTool, WORKSPACE_DIR
 from dista_gmail import gmail_service
 from dista_db import db_engine
 
-# Set User's Verified NVIDIA NIM API Key as default
+# Set Verified NVIDIA NIM Key
 DEFAULT_NVIDIA_KEY = "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"
 os.environ["NVIDIA_API_KEY"] = os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY)
 
@@ -32,24 +32,24 @@ except ImportError:
 
 class DistaBrain:
     """
-    Enterprise-Grade Multi-Provider AI Engine powered by NVIDIA NIM (Llama 3.3 70B).
-    Features non-blocking ThreadPoolExecutor diagnostic key verification.
+    Enterprise Multi-Provider AI Engine.
+    Powered by NVIDIA NIM (Llama 3.3 70B), OpenRouter, Gemini, and DeepSeek.
+    Includes Unicode Safety & Multi-Provider Resilience.
     """
 
     def __init__(self):
         self.name = "Dista AI"
         self.active_provider = os.environ.get("ACTIVE_AI_PROVIDER", "nvidia")
         
-        # Provider API Keys dictionary
         self.api_keys = {
             "nvidia": os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY),
+            "openrouter": os.environ.get("OPENROUTER_API_KEY", ""),
             "kimi": os.environ.get("KIMI_API_KEY", ""),
             "openai": os.environ.get("OPENAI_API_KEY", ""),
             "gemini": os.environ.get("GEMINI_API_KEY", ""),
             "claude": os.environ.get("CLAUDE_API_KEY", ""),
             "deepseek": os.environ.get("DEEPSEEK_API_KEY", ""),
-            "groq": os.environ.get("GROQ_API_KEY", ""),
-            "openrouter": os.environ.get("OPENROUTER_API_KEY", "")
+            "groq": os.environ.get("GROQ_API_KEY", "")
         }
 
     def set_api_key(self, provider: str, key: str):
@@ -58,8 +58,22 @@ class DistaBrain:
         env_var = f"{provider.upper()}_API_KEY"
         os.environ[env_var] = key.strip()
 
+    def get_email_advice(self, sender: str, subject: str, body: str) -> str:
+        """Generates executive email summary & advice without raw unicode console crashes"""
+        prompt = (
+            f"Analyze this incoming message from {sender}:\n"
+            f"Subject: {subject}\n"
+            f"Content:\n{body}\n\n"
+            "Please provide:\n"
+            "1. Executive Summary\n"
+            "2. Strategic Advice & Urgency Rating\n"
+            "3. Recommended Professional Reply Draft"
+        )
+        advice = self._call_ai_engine(prompt)
+        return advice
+
     def test_provider_key(self, provider: str, key: str) -> dict:
-        """Non-blocking ThreadPoolExecutor live verification endpoint for testing any AI API Key"""
+        """Non-blocking ThreadPoolExecutor live verification for AI API Keys"""
         prov = provider.lower().strip()
         test_key = key.strip() or self.api_keys.get(prov, "")
         if not test_key and prov != "g4f":
@@ -79,6 +93,17 @@ class DistaBrain:
                         reply = data["choices"][0]["message"]["content"].strip()
                         latency = int((time.time() - start_t) * 1000)
                         return {"success": True, "provider": "NVIDIA NIM (Llama 3.3 70B)", "reply": reply, "latency_ms": latency}
+
+                elif prov == "openrouter":
+                    url = "https://openrouter.ai/api/v1/chat/completions"
+                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                    payload = {"model": "openrouter/auto", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
+                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                    with urllib.request.urlopen(req, timeout=4) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        reply = data["choices"][0]["message"]["content"].strip()
+                        latency = int((time.time() - start_t) * 1000)
+                        return {"success": True, "provider": "OpenRouter Universal AI", "reply": reply, "latency_ms": latency}
 
                 elif prov == "openai":
                     url = "https://api.openai.com/v1/chat/completions"
@@ -112,17 +137,6 @@ class DistaBrain:
                         reply = data["candidates"][0]["content"]["parts"][0]["text"].strip()
                         latency = int((time.time() - start_t) * 1000)
                         return {"success": True, "provider": "Google Gemini 2.0", "reply": reply, "latency_ms": latency}
-
-                elif prov == "openrouter":
-                    url = "https://openrouter.ai/api/v1/chat/completions"
-                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
-                    payload = {"model": "openrouter/auto", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
-                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-                    with urllib.request.urlopen(req, timeout=4) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                        reply = data["choices"][0]["message"]["content"].strip()
-                        latency = int((time.time() - start_t) * 1000)
-                        return {"success": True, "provider": "OpenRouter Universal AI", "reply": reply, "latency_ms": latency}
 
                 elif prov == "kimi":
                     url = "https://api.moonshot.cn/v1/chat/completions"
@@ -173,14 +187,33 @@ class DistaBrain:
             payload = {
                 "model": "meta/llama-3.3-70b-instruct",
                 "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
-                "temperature": 0.7, "max_tokens": 1024
+                "temperature": 0.7, "max_tokens": 512
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=12) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
             print(f"[NVIDIA NIM Notice]: {e}")
+            return ""
+
+    def _call_openrouter(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
+        if not key: return ""
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "openrouter/auto",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+                "max_tokens": 512
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[OpenRouter Notice]: {e}")
             return ""
 
     def _call_kimi(self, query: str, sys_msg: str) -> str:
@@ -195,7 +228,7 @@ class DistaBrain:
                 "temperature": 0.3
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
@@ -213,7 +246,7 @@ class DistaBrain:
                 "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
@@ -231,7 +264,7 @@ class DistaBrain:
                 "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
@@ -249,7 +282,7 @@ class DistaBrain:
                 "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
@@ -266,29 +299,11 @@ class DistaBrain:
                 "contents": [{"parts": [{"text": f"{sys_msg}\n\nUser Question: {query}"}]}]
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["candidates"][0]["content"]["parts"][0]["text"].strip()
         except Exception as e:
             print(f"[Gemini Notice]: {e}")
-            return ""
-
-    def _call_openrouter(self, query: str, sys_msg: str) -> str:
-        key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
-        if not key: return ""
-        try:
-            url = "https://openrouter.ai/api/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-            payload = {
-                "model": "openrouter/auto",
-                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
-            }
-            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            print(f"[OpenRouter Notice]: {e}")
             return ""
 
     def _call_g4f(self, query: str, sys_msg: str) -> str:
@@ -373,7 +388,7 @@ class DistaBrain:
         # ── 1. GMAIL CONFIG / REAL UNREAD FETCH ────────────────────────
         if any(w in text_lower for w in ["connect gmail", "configure gmail", "setup gmail", "gmail settings"]):
             return {
-                "reply": "To monitor your live Gmail inbox, click the ⚙️ Settings icon in the top bar to enter your Gmail address and 16-character App Password.",
+                "reply": "To monitor your live Gmail inbox, click the settings icon in the top bar to enter your Gmail address and credentials.",
                 "action": "show_gmail_config",
                 "data": None
             }
@@ -388,7 +403,7 @@ class DistaBrain:
                 else:
                     return {"reply": "Connected to your live Gmail! Inbox is clear with zero unread emails.", "action": "show_emails", "data": []}
             else:
-                reply = "Gmail service is ready. Click the ⚙️ Settings icon at the top to connect your live Gmail account using a 16-character Google App Password."
+                reply = "Gmail service is active. Click settings at the top right to configure custom Gmail parameters."
                 return {"reply": reply, "action": "show_gmail_config", "data": None}
 
         # ── 2. REAL / DRAFT EMAIL SENDING ──────────────────────────────

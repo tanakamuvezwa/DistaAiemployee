@@ -41,6 +41,15 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"success": True, "emails": emails}).encode('utf-8'))
                 return
 
+            elif '/api/docs' in self.path:
+                docs = DocsTool.list_documents()
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "docs": docs}).encode('utf-8'))
+                return
+
             elif self.path.startswith('/api/'):
                 self.send_response(200)
                 self._send_cors_headers()
@@ -84,6 +93,46 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(result).encode('utf-8'))
+
+            elif self.path == '/api/advice':
+                sender = payload.get('sender', '')
+                subject = payload.get('subject', '')
+                body = payload.get('body', '')
+                try:
+                    advice = brain.get_email_advice(sender, subject, body)
+                    res = {"success": True, "advice": advice}
+                except Exception as e:
+                    res = {"success": False, "error": str(e)}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+
+            elif self.path == '/api/create_doc':
+                filename = payload.get('filename', 'note.md')
+                content = payload.get('content', '')
+                ok = DocsTool.create_document(filename, content)
+                res = {"success": ok, "message": f"Document '{filename}' created in workspace!"}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+
+            elif self.path == '/api/create_csv':
+                filename = payload.get('filename', 'report.csv')
+                rows = payload.get('rows', [["Header 1", "Header 2"], ["Val 1", "Val 2"]])
+                ok = DocsTool.create_spreadsheet(filename, rows)
+                res = {"success": ok, "message": f"CSV Spreadsheet '{filename}' created in workspace!"}
+
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
 
             elif '/api/emails' in self.path:
                 if gmail_service.is_configured():

@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dista_brain import DistaBrain
 from dista_gmail import gmail_service
-from dista_tools import EmailTool
+from dista_tools import EmailTool, DocsTool
 from dista_db import db_engine
 
 brain = DistaBrain()
@@ -16,7 +16,7 @@ brain = DistaBrain()
 class handler(BaseHTTPRequestHandler):
     """
     Vercel Serverless Python Function Handler
-    Handles API endpoints: /api/chat, /api/test_key, /api/emails, /api/provider_config, /api/gmail_config, /api/mongodb_config
+    Handles API endpoints: /api/chat, /api/advice, /api/test_key, /api/emails, /api/docs, /api/create_doc, /api/create_csv, /api/provider_config, /api/mongodb_config
     """
 
     def _send_cors_headers(self):
@@ -42,6 +42,11 @@ class handler(BaseHTTPRequestHandler):
             else:
                 emails = EmailTool.get_unread_emails()
             response_data = {"success": True, "emails": emails}
+
+        elif path.endswith('/docs') or '/api/docs' in path:
+            docs = DocsTool.list_documents()
+            response_data = {"success": True, "docs": docs}
+
         else:
             response_data = {
                 "status": "online",
@@ -75,6 +80,46 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
+
+        elif path.endswith('/advice') or '/api/advice' in path:
+            sender = payload.get('sender', '')
+            subject = payload.get('subject', '')
+            body = payload.get('body', '')
+            try:
+                advice = brain.get_email_advice(sender, subject, body)
+                res = {"success": True, "advice": advice}
+            except Exception as e:
+                res = {"success": False, "error": str(e)}
+
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode('utf-8'))
+
+        elif path.endswith('/create_doc') or '/api/create_doc' in path:
+            filename = payload.get('filename', 'note.md')
+            content = payload.get('content', '')
+            ok = DocsTool.create_document(filename, content)
+            res = {"success": ok, "message": f"Document '{filename}' created in workspace!"}
+
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode('utf-8'))
+
+        elif path.endswith('/create_csv') or '/api/create_csv' in path:
+            filename = payload.get('filename', 'report.csv')
+            rows = payload.get('rows', [["Header 1", "Header 2"], ["Val 1", "Val 2"]])
+            ok = DocsTool.create_spreadsheet(filename, rows)
+            res = {"success": ok, "message": f"CSV Spreadsheet '{filename}' created in workspace!"}
+
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(res).encode('utf-8'))
 
         elif path.endswith('/emails') or '/api/emails' in path:
             if gmail_service.is_configured():

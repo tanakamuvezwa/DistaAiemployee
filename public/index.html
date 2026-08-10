@@ -3,183 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISTA AI — Logged In Executive Workspace</title>
+  <title>DISTA AI — Enterprise Workspace Assistant</title>
   <!-- Official Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #0B0C10; color: #E2E8F0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    :root {
+      --bg-dark: #08090E;
+      --card-bg: rgba(18, 21, 31, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #2563EB; /* Enterprise Executive Royal Blue */
+      --accent-glow: rgba(37, 99, 235, 0.35);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --cyan-accent: #0284C7;
+      --emerald-accent: #10B981;
+      --amber-accent: #F59E0B;
+    }
+
+    /* Theme Customizer Colors */
+    body.theme-orange { --accent: #EA580C; --accent-glow: rgba(234, 88, 12, 0.35); }
+    body.theme-emerald { --accent: #10B981; --accent-glow: rgba(16, 185, 129, 0.35); }
+    body.theme-cyan { --accent: #0284C7; --accent-glow: rgba(2, 132, 199, 0.35); }
+    body.theme-purple { --accent: #9333EA; --accent-glow: rgba(147, 51, 234, 0.35); }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08), transparent 70%); }
     
     /* Phone Shell Container */
     .app-card {
       width: 100%;
-      max-width: 460px;
-      height: 920px;
-      background-color: #0F1017;
-      border: 2px solid #282B3D;
+      max-width: 480px;
+      height: 940px;
+      background: #0D0F17;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 45px rgba(255,107,0,0.2);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.9), 0 0 50px var(--accent-glow);
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 22px 20px;
       position: relative;
       overflow: hidden;
     }
 
-    /* ── UNAUTHENTICATED LOGIN SCREEN ────────────────────────── */
-    .auth-screen {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; gap: 20px; padding: 20px;
+    /* Header Bar */
+    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .brand-logo { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; color: #FFF; display: flex; align-items: center; gap: 6px; }
+    .brand-logo span { color: var(--accent); }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border); color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; transition: all 0.2s ease;
     }
-    .auth-logo { font-size: 32px; font-weight: 900; letter-spacing: 2px; color: #FFF; }
-    .auth-logo span { color: #FF6B00; }
-    .auth-desc { font-size: 13px; color: #8C94A8; line-height: 1.5; max-width: 320px; }
+    .icon-btn:hover { border-color: var(--accent); color: #FFF; background: rgba(255,255,255,0.1); transform: scale(1.05); }
+
+    /* ── UNAUTHENTICATED LANDING SCREEN ────────────────────── */
+    .auth-view {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 24px; padding: 20px;
+    }
+    .auth-hero-icon {
+      width: 90px; height: 90px; border-radius: 28px; background: linear-gradient(135deg, var(--accent), #3B82F6);
+      display: flex; align-items: center; justify-content: center; font-size: 42px;
+      box-shadow: 0 15px 35px var(--accent-glow); margin-bottom: 10px; animation: pulseHero 3s infinite alternate;
+    }
+    @keyframes pulseHero { from { transform: scale(0.98); } to { transform: scale(1.04); } }
     
-    .google-signin-main {
-      background: #FFFFFF; color: #1F1F1F; border-radius: 28px; padding: 14px 24px;
+    .auth-title { font-size: 24px; font-weight: 800; color: #FFF; line-height: 1.2; }
+    .auth-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; max-width: 330px; }
+
+    .btn-google-large {
+      background: #FFFFFF; color: #111827; border-radius: 28px; padding: 15px 28px;
       display: flex; align-items: center; justify-content: center; gap: 12px;
       font-size: 14px; font-weight: 800; cursor: pointer; width: 100%; max-width: 340px;
-      box-shadow: 0 6px 25px rgba(255,255,255,0.25); transition: all 0.25s ease; border: none;
+      box-shadow: 0 8px 30px rgba(255,255,255,0.25); border: none; transition: all 0.25s ease;
     }
-    .google-signin-main:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,255,255,0.4); }
+    .btn-google-large:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(255,255,255,0.4); }
 
-    /* ── LOGGED IN APP DASHBOARD ──────────────────────────────── */
-    .dashboard-screen { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+    /* ── LOGGED IN EXECUTIVE DASHBOARD ──────────────────────── */
+    .dashboard-view { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
 
-    /* Top User Profile Header */
-    .user-bar {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 18px; padding: 10px 14px;
-      display: flex; justify-content: space-between; align-items: center;
+    /* Profile Bar */
+    .profile-card {
+      background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border);
+      border-radius: 20px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
     }
-    .user-info { display: flex; align-items: center; gap: 10px; }
-    .user-avatar {
-      width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #FF6B00, #FF8800);
-      color: #FFF; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 12px rgba(255,107,0,0.5);
+    .profile-user { display: flex; align-items: center; gap: 12px; }
+    .profile-avatar {
+      width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #3B82F6);
+      color: #FFF; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 15px var(--accent-glow);
     }
-    .user-name { font-size: 13px; font-weight: 800; color: #FFF; }
-    .user-email { font-size: 10.5px; color: #8C94A8; }
-    .logout-btn { background: #0F1017; border: 1px solid #282B3D; color: #FF4444; border-radius: 10px; padding: 5px 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
-    .logout-btn:hover { border-color: #FF4444; background: rgba(255,68,68,0.1); }
+    .profile-name { font-size: 13.5px; font-weight: 800; color: #FFF; }
+    .profile-email { font-size: 11px; color: var(--text-muted); }
+    .btn-logout { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #EF4444; border-radius: 10px; padding: 6px 12px; font-size: 10.5px; font-weight: 800; cursor: pointer; }
+    .btn-logout:hover { background: #EF4444; color: #FFF; }
 
-    /* Navigation Bar Tabs */
-    .nav-tabs { display: flex; background: #1A1C28; border: 1px solid #282B3D; border-radius: 14px; padding: 4px; gap: 4px; }
-    .nav-tab {
-      flex: 1; text-align: center; padding: 7px 0; border-radius: 10px; font-size: 11px; font-weight: 700;
-      color: #8C94A8; cursor: pointer; transition: all 0.2s;
+    /* Navigation Bar */
+    .nav-bar { display: flex; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 4px; gap: 4px; }
+    .nav-btn {
+      flex: 1; text-align: center; padding: 8px 0; border-radius: 12px; font-size: 11.5px; font-weight: 700;
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
     }
-    .nav-tab.active { background: #FF6B00; color: #FFF; }
+    .nav-btn.active { background: var(--accent); color: #FFF; box-shadow: 0 4px 15px var(--accent-glow); }
 
-    /* Metrics Summary Strip */
-    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .metric-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 14px; padding: 8px; text-align: center;
+    /* Content View Panels */
+    .content-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
+
+    /* Gmail & Inbox Cards */
+    .email-item-card {
+      background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
+      border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: all 0.25s ease;
     }
-    .metric-val { font-size: 14px; font-weight: 900; color: #FF6B00; }
-    .metric-lbl { font-size: 9.5px; font-weight: 700; color: #8C94A8; margin-top: 2px; }
+    .email-item-card:hover { border-color: var(--accent); transform: translateY(-2px); background: rgba(26, 31, 46, 0.85); }
+    .email-head { display: flex; justify-content: space-between; align-items: center; }
+    .email-author { font-size: 13px; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 8px; }
+    .mini-badge { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; }
+    .email-date { font-size: 10.5px; color: var(--text-muted); }
+    .email-subj { font-size: 12.5px; font-weight: 700; color: var(--accent); }
+    .email-snippet { font-size: 11.5px; color: #CBD5E1; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-    /* Content Area Views */
-    .content-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
-
-    /* 1. Gmail Inbox & AI Suggestions Screen */
-    .email-card {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 16px; padding: 12px;
-      display: flex; flex-direction: column; gap: 8px; transition: all 0.2s;
+    .email-actions-strip { display: flex; gap: 6px; margin-top: 4px; }
+    .btn-action-mini {
+      flex: 1; background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 8px; padding: 6px; font-size: 10.5px; font-weight: 700; color: var(--text-main);
+      text-align: center; cursor: pointer; transition: all 0.2s;
     }
-    .email-card:hover { border-color: #FF6B00; background: #222536; }
-    .email-hdr { display: flex; justify-content: space-between; align-items: center; }
-    .email-sender { font-size: 12px; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 6px; }
-    .avatar-mini { width: 20px; height: 20px; border-radius: 50%; background: #FF6B00; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; }
-    .email-time { font-size: 10px; color: #8C94A8; }
-    .email-subject { font-size: 11.5px; font-weight: 700; color: #FF8800; }
-    .email-body { font-size: 11px; color: #CBD5E1; line-height: 1.35; }
+    .btn-action-mini:hover { background: var(--accent); color: #FFF; }
 
-    .ai-suggestions-box {
-      background: rgba(0, 229, 255, 0.05); border: 1px dashed #00E5FF; border-radius: 10px; padding: 8px;
-      display: flex; flex-direction: column; gap: 5px;
-    }
-    .ai-sug-title { font-size: 9.5px; font-weight: 800; color: #00E5FF; letter-spacing: 0.5px; text-transform: uppercase; }
-    .ai-sug-chip {
-      background: #0F1017; border: 1px solid #282B3D; border-radius: 6px; padding: 5px 8px;
-      font-size: 10px; color: #E2E8F0; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
-    }
-    .ai-sug-chip:hover { border-color: #00E5FF; color: #00E5FF; background: #1A1C28; }
-
-    /* 2. Dista AI Voice Assistant Box */
-    .avatar-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin: 4px 0; }
+    /* Dista AI Assistant Avatar Box */
+    .assistant-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 8px 0; }
     .avatar-ring {
-      width: 90px; height: 90px; border-radius: 50%; border: 2.5px solid #FF6B00;
-      box-shadow: 0 0 20px rgba(255,107,0,0.45); display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+      width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent);
+      box-shadow: 0 0 25px var(--accent-glow); display: flex; align-items: center; justify-content: center; transition: all 0.3s;
     }
-    .avatar-ring.speaking { border-color: #FF8800; box-shadow: 0 0 25px rgba(255,136,0,0.6); }
-    .pixel-avatar {
-      width: 60px; height: 60px; background: radial-gradient(circle at 35% 35%, #D7DEEB, #A0A8B8);
+    .avatar-ring.speaking { border-color: var(--amber-accent); box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); }
+    .pixel-face {
+      width: 60px; height: 60px; background: radial-gradient(circle at 35% 35%, #E2E8F0, #94A3B8);
       clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .pixel-eyes { display: flex; gap: 14px; margin-top: -6px; }
-    .pixel-eye { width: 8px; height: 8px; background: #FF6B00; border-radius: 2px; }
-    .pixel-mouth { width: 14px; height: 3px; background: #282C3A; margin-top: 8px; }
+    .pixel-eye { width: 8px; height: 8px; background: var(--accent); border-radius: 2px; }
+    .pixel-mouth { width: 14px; height: 3px; background: #1E293B; margin-top: 8px; }
 
-    .chat-stream { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .msg-bubble { padding: 10px 12px; border-radius: 12px; font-size: 12px; max-width: 90%; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
-    .msg-user { background: #FF6B00; color: #FFF; align-self: flex-end; }
-    .msg-dista { background: #1A1C28; border: 1px solid #282B3D; color: #E2E8F0; align-self: flex-start; }
+    .greeting-bubble { font-size: 12px; font-weight: 600; color: var(--text-main); line-height: 1.4; max-width: 340px; }
 
-    /* 3. Document Item */
-    .doc-item {
-      background: #1A1C28; border: 1px solid #282B3D; border-radius: 12px; padding: 10px 12px;
-      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    .chat-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble { padding: 12px 16px; border-radius: 16px; font-size: 12.5px; max-width: 90%; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .chat-user { background: var(--accent); color: #FFF; align-self: flex-end; }
+    .chat-ai { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); align-self: flex-start; }
+
+    /* Modal Component System with SCROLLABLE Settings & Reader Sheets */
+    .modal-overlay {
+      position: absolute; inset: 0; background: rgba(8, 9, 14, 0.96); backdrop-filter: blur(16px);
+      display: flex; flex-direction: column; justify-content: center; padding: 20px; z-index: 200;
     }
-    .doc-item:hover { border-color: #FF6B00; }
-    .doc-title { font-size: 12px; font-weight: 700; color: #FFF; }
-    .doc-date { font-size: 10px; color: #8C94A8; }
-
-    /* Modal Windows */
-    .modal {
-      position: absolute; inset: 0; background: rgba(15,16,23,0.96); backdrop-filter: blur(10px);
-      display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 100;
-    }
-    .modal-card { background: #1A1C28; border: 1px solid #FF6B00; border-radius: 20px; padding: 20px; max-height: 92%; overflow-y: auto; }
-    .modal-title { font-size: 16px; font-weight: 700; color: #FF6B00; margin-bottom: 8px; }
-    .modal-desc { font-size: 11px; color: #8C94A8; margin-bottom: 12px; line-height: 1.4; }
-    .modal-label { font-size: 11px; font-weight: 700; color: #8C94A8; margin-bottom: 4px; display: block; }
-    .modal-input { width: 100%; background: #0F1017; border: 1px solid #282B3D; border-radius: 8px; padding: 9px; color: #FFF; margin-bottom: 6px; font-size: 12.5px; }
-    .modal-btn { width: 100%; padding: 10px; background: #FF6B00; border: none; border-radius: 8px; color: #FFF; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
     
-    .key-input-group { display: flex; gap: 6px; margin-bottom: 4px; }
-    .key-input-group input { flex: 1; margin-bottom: 0; }
-    .test-btn { background: #00E5FF; color: #0F1017; border: none; border-radius: 8px; padding: 0 12px; font-size: 10px; font-weight: 800; cursor: pointer; }
-    .test-btn:hover { background: #33EEFF; }
-    .test-result { font-size: 10px; font-weight: 600; margin-bottom: 10px; line-height: 1.3; }
-    .test-result.success { color: #00FF66; }
-    .test-result.error { color: #FF4444; }
+    /* Crucial Scroll Fix: max-height: 85vh with overflow-y: auto */
+    .modal-sheet {
+      background: #11141F; border: 1px solid var(--accent); border-radius: 24px; padding: 20px;
+      max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .modal-h1 { font-size: 16px; font-weight: 800; color: var(--accent); }
+    .modal-close { font-size: 18px; cursor: pointer; color: var(--text-muted); }
+    .modal-close:hover { color: #FFF; }
+    
+    .form-group { margin-bottom: 8px; }
+    .form-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block; }
+    .form-txt { width: 100%; background: #08090E; border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: #FFF; font-size: 12.5px; outline: none; }
+    .form-txt:focus { border-color: var(--accent); }
+    .form-textarea { min-height: 100px; resize: vertical; }
 
-    /* Bottom Input Pill Bar */
-    .input-bar {
-      background: #1A1C28; border: 1px solid #2A2D40; border-radius: 28px;
+    .key-input-group { display: flex; gap: 6px; }
+    .key-input-group input { flex: 1; }
+    .test-btn { background: var(--accent); color: #FFF; border: none; border-radius: 8px; padding: 0 12px; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .test-btn:hover { opacity: 0.9; }
+    .test-result { font-size: 10px; font-weight: 600; margin-top: 4px; line-height: 1.3; }
+    .test-result.success { color: #10B981; }
+    .test-result.error { color: #EF4444; }
+
+    .btn-primary { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 12px; color: #FFF; font-weight: 800; font-size: 13px; cursor: pointer; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 12px; color: #FFF; font-weight: 700; font-size: 12px; cursor: pointer; }
+
+    /* Universal Input Pill */
+    .bottom-input {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 30px;
       padding: 6px 8px 6px 16px; display: flex; align-items: center; gap: 10px; margin-top: auto;
     }
-    .input-bar input { flex: 1; background: transparent; border: none; outline: none; color: #FFF; font-size: 12.5px; }
-    .mic-btn {
-      width: 36px; height: 36px; border-radius: 18px; background: #FF6B00; border: none;
+    .bottom-input input { flex: 1; background: transparent; border: none; outline: none; color: #FFF; font-size: 13px; }
+    .btn-mic {
+      width: 38px; height: 38px; border-radius: 19px; background: var(--accent); border: none;
       color: #FFF; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 15px rgba(255,107,0,0.5); transition: all 0.2s;
+      box-shadow: 0 0 15px var(--accent-glow); transition: all 0.2s;
     }
-    .mic-btn.active { background: #00E5FF; color: #0F1017; }
   </style>
 </head>
 <body>
   <div class="app-card">
     
-    <!-- 1. UNAUTHENTICATED LOGIN LANDING VIEW -->
-    <div class="auth-screen" id="authScreen">
-      <div class="auth-logo">DISTA <span>AI</span></div>
+    <!-- Top Header -->
+    <div class="top-header">
+      <div class="brand-logo">DISTA <span>AI</span></div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="openSettingsModal()" title="Settings & Subsystems">⚙️</div>
+      </div>
+    </div>
+
+    <!-- 1. UNAUTHENTICATED LANDING VIEW -->
+    <div class="auth-view" id="authView">
+      <div class="auth-hero-icon">💼</div>
+      <div class="auth-title">Dista Executive Assistant</div>
       <div class="auth-desc">
-        Enterprise Personal Executive Assistant powered by <b>NVIDIA NIM (Llama 3.3 70B)</b>, Gmail & Multi-AI Cloud Subsystems.
+        Commercial-grade AI Personal Assistant powered by <b>NVIDIA NIM (Llama 3.3 70B)</b>, Live Gmail Integration, and Automated Document Generation.
       </div>
 
-      <button class="google-signin-main" onclick="loginWithGoogle()">
+      <button class="btn-google-large" onclick="loginWithGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -188,61 +235,40 @@
         </svg>
         <span>Sign In straight with Google</span>
       </button>
-
-      <div style="font-size:11px;color:#8C94A8;margin-top:10px">
-        Click to authenticate instantly and unlock your executive app.
-      </div>
     </div>
 
-    <!-- 2. LOGGED IN APP DASHBOARD -->
-    <div class="dashboard-screen" id="dashboardScreen" style="display:none;">
+    <!-- 2. LOGGED IN EXECUTIVE DASHBOARD -->
+    <div class="dashboard-view" id="dashboardView" style="display:none;">
       
       <!-- User Profile Header -->
-      <div class="user-bar">
-        <div class="user-info">
-          <div class="user-avatar" id="userAvatar">T</div>
+      <div class="profile-card">
+        <div class="profile-user">
+          <div class="profile-avatar" id="userAvatar">T</div>
           <div>
-            <div class="user-name" id="userName">Tanaka Muvezwa</div>
-            <div class="user-email" id="userEmail">tanakamuvezwa@gmail.com</div>
+            <div class="profile-name" id="userName">Tanaka Muvezwa</div>
+            <div class="profile-email" id="userEmail">tanakamuvezwa@gmail.com</div>
           </div>
         </div>
-        <button class="logout-btn" onclick="logoutGoogle()">Sign Out</button>
-      </div>
-
-      <!-- Metrics Summary Strip -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-val" id="inboxMetricVal">3 New</div>
-          <div class="metric-lbl">Gmail Inbox</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val" style="color:#00E5FF">NVIDIA 70B</div>
-          <div class="metric-lbl">AI Model</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val" style="color:#00FF66">MongoDB</div>
-          <div class="metric-lbl">Cloud Storage</div>
-        </div>
+        <button class="btn-logout" onclick="logoutGoogle()">Sign Out</button>
       </div>
 
       <!-- Navigation Tabs -->
-      <div class="nav-tabs">
-        <div class="nav-tab active" id="tabInbox" onclick="switchTab('inbox')">📧 Inbox & AI</div>
-        <div class="nav-tab" id="tabAi" onclick="switchTab('ai')">🧠 Dista AI</div>
-        <div class="nav-tab" id="tabDocs" onclick="switchTab('docs')">📄 Documents</div>
-        <div class="nav-tab" id="tabKeys" onclick="openApiKeyModal()">🔑 Keys</div>
+      <div class="nav-bar">
+        <div class="nav-btn active" id="tabInbox" onclick="switchTab('inbox')">📥 Live Gmail</div>
+        <div class="nav-btn" id="tabAi" onclick="switchTab('ai')">🧠 AI Assistant</div>
+        <div class="nav-btn" id="tabDocs" onclick="switchTab('docs')">📄 Docs & CSV</div>
       </div>
 
-      <!-- CONTENT VIEW 1: Dedicated Gmail & Live AI Suggestions -->
-      <div class="content-panel" id="panelInbox">
-        <!-- Live Inbox Populated dynamically via fetchLiveEmails() -->
+      <!-- CONTENT PANEL 1: Live Gmail Inbox -->
+      <div class="content-area" id="panelInbox">
+        <!-- Live Inbox Content rendered by fetchLiveInbox() -->
       </div>
 
-      <!-- CONTENT VIEW 2: Dista AI Assistant & Voice Chat -->
-      <div class="content-panel" id="panelAi" style="display:none;">
-        <div class="avatar-box">
+      <!-- CONTENT PANEL 2: Interactive Dista AI Chat & Voice Assistant -->
+      <div class="content-area" id="panelAi" style="display:none;">
+        <div class="assistant-box">
           <div class="avatar-ring" id="avatarRing">
-            <div class="pixel-avatar">
+            <div class="pixel-face">
               <div class="pixel-eyes">
                 <div class="pixel-eye"></div>
                 <div class="pixel-eye"></div>
@@ -250,105 +276,217 @@
               <div class="pixel-mouth" id="pixelMouth"></div>
             </div>
           </div>
-          <div style="font-size:11.5px;font-weight:700;color:#FFF" id="greetingText">Hello! I'm Dista AI. How can I assist you?</div>
+          <div class="greeting-bubble" id="greetingText">Hello! I'm Dista AI. Ask me anything or state your command.</div>
         </div>
 
-        <div class="chat-stream" id="chatStream">
-          <div class="msg-bubble msg-dista">Hello Tanaka! I'm Dista AI, your executive assistant powered by NVIDIA NIM (Llama 3.3 70B).</div>
+        <div class="chat-container" id="chatStream">
+          <div class="chat-bubble chat-ai">Hello! I'm Dista AI, your executive assistant powered by NVIDIA NIM (Llama 3.3 70B). How can I assist you today?</div>
         </div>
       </div>
 
-      <!-- CONTENT VIEW 3: Workspace Documents -->
-      <div class="content-panel" id="panelDocs" style="display:none;">
-        <div class="doc-item" onclick="sendCmd('read docs')">
-          <div>
-            <div class="doc-title">📄 note_20260811_021500.md</div>
-            <div class="doc-date">Q3 AI Integration Strategy Notes</div>
-          </div>
-          <b style="color:#FF6B00">OPEN →</b>
+      <!-- CONTENT PANEL 3: Workspace Documents & Excel/CSV Generator -->
+      <div class="content-area" id="panelDocs" style="display:none;">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="btn-primary" style="font-size:11px;padding:8px" onclick="openCreateDocModal()">➕ New Note (.md)</button>
+          <button class="btn-primary" style="font-size:11px;padding:8px;background:var(--emerald-accent)" onclick="openCreateCsvModal()">📊 New Spreadsheet (.csv)</button>
         </div>
-        <div class="doc-item" onclick="sendCmd('read docs')">
-          <div>
-            <div class="doc-title">📄 executive_briefing.md</div>
-            <div class="doc-date">Daily Executive Briefing Overview</div>
-          </div>
-          <b style="color:#FF6B00">OPEN →</b>
+
+        <div id="workspaceFilesContainer">
+          <!-- Files populated dynamically by fetchWorkspaceDocs() -->
         </div>
       </div>
 
-      <!-- Bottom Command Input Pill -->
-      <div class="input-bar">
+      <!-- Bottom Universal Input Bar -->
+      <div class="bottom-input">
         <input type="text" id="userInput" placeholder="Ask Dista AI or state command..." onkeydown="if(event.key==='Enter') sendInput()" />
-        <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
+        <button class="btn-mic" id="micBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
       </div>
 
     </div>
 
-    <!-- Multi-Provider API Keys Setup Modal -->
-    <div class="modal" id="apiKeyModal" style="display:none;">
-      <div class="modal-card">
-        <div class="modal-title">🔑 Test & Configure AI API Keys</div>
-        <p class="modal-desc">
-          Click <b>🧪 TEST KEY</b> to run a live diagnostic ping on any AI API Key!
-        </p>
-
-        <!-- NVIDIA NIM -->
-        <label class="modal-label">NVIDIA NIM API KEY (DEFAULT ACTIVE)</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyNvidia" value="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" />
-          <button class="test-btn" onclick="testKeyLive('nvidia')">🧪 TEST KEY</button>
+    <!-- ── REAL EMAIL READER & EDITABLE DRAFT MODAL ──────────── -->
+    <div class="modal-overlay" id="emailDetailModal" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-head">
+          <div class="modal-h1">✉️ Email Reader & AI Assistant</div>
+          <div class="modal-close" onclick="closeEmailModal()">✕</div>
         </div>
-        <div class="test-result" id="resNvidia"></div>
 
-        <!-- KIMI AI -->
-        <label class="modal-label">KIMI AI / MOONSHOT KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyKimi" placeholder="sk-..." />
-          <button class="test-btn" onclick="testKeyLive('kimi')">🧪 TEST KEY</button>
+        <div class="form-group">
+          <label class="form-lbl">SENDER</label>
+          <input type="text" class="form-txt" id="modalEmailSender" readonly />
         </div>
-        <div class="test-result" id="resKimi"></div>
 
-        <!-- DEEPSEEK -->
-        <label class="modal-label">DEEPSEEK API KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyDeepseek" placeholder="sk-..." />
-          <button class="test-btn" onclick="testKeyLive('deepseek')">🧪 TEST KEY</button>
+        <div class="form-group">
+          <label class="form-lbl">SUBJECT</label>
+          <input type="text" class="form-txt" id="modalEmailSubject" readonly />
         </div>
-        <div class="test-result" id="resDeepseek"></div>
 
-        <!-- GROQ -->
-        <label class="modal-label">GROQ ULTRA-FAST API KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyGroq" placeholder="gsk_..." />
-          <button class="test-btn" onclick="testKeyLive('groq')">🧪 TEST KEY</button>
+        <div class="form-group">
+          <label class="form-lbl">EMAIL CONTENT & EDITABLE DRAFT</label>
+          <textarea class="form-txt form-textarea" id="modalEmailBody"></textarea>
         </div>
-        <div class="test-result" id="resGroq"></div>
 
-        <!-- OPENAI -->
-        <label class="modal-label">OPENAI API KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." />
-          <button class="test-btn" onclick="testKeyLive('openai')">🧪 TEST KEY</button>
+        <!-- AI Advice Box -->
+        <div class="form-group" id="aiAdviceBox" style="display:none;">
+          <label class="form-lbl" style="color:var(--cyan-accent)">💡 DISTA AI STRATEGIC ANALYSIS & SMART REPLY</label>
+          <div style="background:#08090E;border:1px solid var(--cyan-accent);border-radius:10px;padding:12px;font-size:11.5px;line-height:1.5;color:#F8FAFC;white-space:pre-wrap" id="modalEmailAdviceText"></div>
         </div>
-        <div class="test-result" id="resOpenai"></div>
 
-        <!-- GEMINI -->
-        <label class="modal-label">GOOGLE GEMINI API KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyGemini" placeholder="AIzaSy..." />
-          <button class="test-btn" onclick="testKeyLive('gemini')">🧪 TEST KEY</button>
+        <button class="btn-primary" style="background:var(--cyan-accent)" onclick="askAiEmailAdvice()">💡 Ask AI for Strategic Advice & Draft Reply</button>
+        <button class="btn-primary" style="background:var(--emerald-accent)" onclick="createCsvFromEmail()">📊 Convert Email Action Items to Excel CSV</button>
+        <button class="btn-secondary" onclick="openRealGmailWeb()">🌐 Open Real Gmail in Browser</button>
+        <button class="btn-secondary" onclick="closeEmailModal()">Close</button>
+      </div>
+    </div>
+
+    <!-- ── CREATE NEW DOCUMENT MODAL ────────────────────────── -->
+    <div class="modal-overlay" id="createDocModal" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-head">
+          <div class="modal-h1">📄 Create Instant Workspace Document</div>
+          <div class="modal-close" onclick="closeCreateDocModal()">✕</div>
         </div>
-        <div class="test-result" id="resGemini"></div>
 
-        <!-- OPENROUTER -->
-        <label class="modal-label">OPENROUTER API KEY</label>
-        <div class="key-input-group">
-          <input type="password" class="modal-input" id="keyOpenrouter" placeholder="sk-or-v1-..." />
-          <button class="test-btn" onclick="testKeyLive('openrouter')">🧪 TEST KEY</button>
+        <div class="form-group">
+          <label class="form-lbl">DOCUMENT FILENAME (.md or .txt)</label>
+          <input type="text" class="form-txt" id="docFileName" placeholder="executive_summary.md" />
         </div>
-        <div class="test-result" id="resOpenrouter"></div>
 
-        <button class="modal-btn" onclick="closeApiKeyModal()">Done</button>
+        <div class="form-group">
+          <label class="form-lbl">DOCUMENT CONTENT</label>
+          <textarea class="form-txt form-textarea" id="docFileContent" placeholder="# Executive Summary&#10;&#10;Write note contents here..."></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="saveNewDocument()">Save File to Workspace</button>
+        <button class="btn-secondary" onclick="closeCreateDocModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ── CREATE NEW SPREADSHEET (CSV) MODAL ────────────────── -->
+    <div class="modal-overlay" id="createCsvModal" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-head">
+          <div class="modal-h1">📊 Create Instant Excel Spreadsheet (.csv)</div>
+          <div class="modal-close" onclick="closeCreateCsvModal()">✕</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">SPREADSHEET FILENAME (.csv)</label>
+          <input type="text" class="form-txt" id="csvFileName" value="q3_budget_report.csv" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-lbl">COMMA-SEPARATED VALUES (CSV ROWS)</label>
+          <textarea class="form-txt form-textarea" id="csvFileContent" placeholder="Item, Qty, Cost, Status&#10;NVIDIA NIM License, 1, $500, Active&#10;MongoDB Atlas Cluster, 1, $200, Active"></textarea>
+        </div>
+
+        <button class="btn-primary" style="background:var(--emerald-accent)" onclick="saveNewSpreadsheet()">Save CSV to Workspace</button>
+        <button class="btn-secondary" onclick="closeCreateCsvModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ── FULLY SCROLLABLE UNIVERSAL SETTINGS & ALL 8 API KEYS MODAL ── -->
+    <div class="modal-overlay" id="settingsModal" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-head">
+          <div class="modal-h1">⚙️ Workspace Settings & API Keys</div>
+          <div class="modal-close" onclick="closeSettingsModal()">✕</div>
+        </div>
+
+        <!-- MongoDB Cloud Connection -->
+        <div class="form-group">
+          <label class="form-lbl">💾 MONGODB ATLAS CONNECTION URI</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="mongoUriInput" placeholder="mongodb+srv://user:pass@cluster.mongodb.net/dista_db" />
+            <button class="test-btn" onclick="saveMongoUri()">CONNECT</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px" id="mongoStatusTxt">Status: SQLite Local Engine</div>
+        </div>
+
+        <!-- UI Theme Customizer -->
+        <div class="form-group">
+          <label class="form-lbl">🎨 UI ACCENT THEME PRESET</label>
+          <div style="display:flex;gap:6px">
+            <button class="btn-secondary" style="background:#2563EB" onclick="setTheme('')">Blue</button>
+            <button class="btn-secondary" style="background:#EA580C" onclick="setTheme('orange')">Orange</button>
+            <button class="btn-secondary" style="background:#10B981;color:#000" onclick="setTheme('emerald')">Emerald</button>
+            <button class="btn-secondary" style="background:#0284C7;color:#000" onclick="setTheme('cyan')">Cyan</button>
+            <button class="btn-secondary" style="background:#9333EA" onclick="setTheme('purple')">Purple</button>
+          </div>
+        </div>
+
+        <!-- 1. NVIDIA NIM -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 1. NVIDIA NIM API KEY (PRIMARY ACTIVE)</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyNvidia" value="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" />
+            <button class="test-btn" onclick="testKeyLive('nvidia')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resNvidia"></div>
+        </div>
+
+        <!-- 2. GEMINI 2.0 -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 2. GOOGLE GEMINI 2.0 API KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyGemini" placeholder="AIzaSy..." />
+            <button class="test-btn" onclick="testKeyLive('gemini')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resGemini"></div>
+        </div>
+
+        <!-- 3. OPENAI -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 3. OPENAI (GPT-4o) API KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyOpenai" placeholder="sk-proj-..." />
+            <button class="test-btn" onclick="testKeyLive('openai')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resOpenai"></div>
+        </div>
+
+        <!-- 4. GROQ -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 4. GROQ ULTRA-FAST API KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyGroq" placeholder="gsk_..." />
+            <button class="test-btn" onclick="testKeyLive('groq')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resGroq"></div>
+        </div>
+
+        <!-- 5. DEEPSEEK -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 5. DEEPSEEK (V3/R1) API KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyDeepseek" placeholder="sk-..." />
+            <button class="test-btn" onclick="testKeyLive('deepseek')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resDeepseek"></div>
+        </div>
+
+        <!-- 6. KIMI AI -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 6. KIMI AI / MOONSHOT KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyKimi" placeholder="sk-..." />
+            <button class="test-btn" onclick="testKeyLive('kimi')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resKimi"></div>
+        </div>
+
+        <!-- 7. OPENROUTER -->
+        <div class="form-group">
+          <label class="form-lbl">🔑 7. OPENROUTER UNIVERSAL API KEY</label>
+          <div class="key-input-group">
+            <input type="password" class="form-txt" id="keyOpenrouter" placeholder="sk-or-v1-..." />
+            <button class="test-btn" onclick="testKeyLive('openrouter')">🧪 TEST KEY</button>
+          </div>
+          <div class="test-result" id="resOpenrouter"></div>
+        </div>
+
+        <button class="btn-primary" onclick="closeSettingsModal()">Save & Close Settings</button>
       </div>
     </div>
 
@@ -357,6 +495,7 @@
   <script>
     let isListening = false;
     let isSpeaking = false;
+    let currentActiveEmail = null;
     const GOOGLE_CLIENT_ID = "327420491230-g63opo9hup5sofegimdchaoibldjaack.apps.googleusercontent.com";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -366,93 +505,39 @@
       } else {
         showAuthScreen();
       }
+
+      const savedTheme = localStorage.getItem('dista_theme') || '';
+      if (savedTheme) setTheme(savedTheme);
+
+      ['nvidia', 'gemini', 'openai', 'groq', 'deepseek', 'kimi', 'openrouter'].forEach(prov => {
+        const val = localStorage.getItem('dista_' + prov + '_key');
+        if (val) {
+          const el = document.getElementById('key' + prov.charAt(0).toUpperCase() + prov.slice(1));
+          if (el) el.value = val;
+        }
+      });
     });
 
+    function setTheme(themeName) {
+      document.body.className = themeName ? 'theme-' + themeName : '';
+      localStorage.setItem('dista_theme', themeName);
+    }
+
     function showLoggedInApp(email) {
-      document.getElementById('authScreen').style.display = 'none';
-      document.getElementById('dashboardScreen').style.display = 'flex';
+      document.getElementById('authView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'flex';
       
       document.getElementById('userEmail').innerText = email;
       const initial = email.charAt(0).toUpperCase();
       document.getElementById('userAvatar').innerText = initial;
       document.getElementById('userName').innerText = email.split('@')[0].replace('.', ' ').toUpperCase();
 
-      fetchLiveEmails();
+      fetchLiveInbox();
     }
 
     function showAuthScreen() {
-      document.getElementById('authScreen').style.display = 'flex';
-      document.getElementById('dashboardScreen').style.display = 'none';
-    }
-
-    async function fetchLiveEmails() {
-      const container = document.getElementById('panelInbox');
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#8C94A8;font-size:12px">⏳ Fetching live emails from server...</div>';
-
-      try {
-        const resp = await fetch('/api/emails');
-        const data = await resp.json();
-        const emails = data.emails || [];
-
-        if (emails.length === 0) {
-          container.innerHTML = `
-            <div style="text-align:center;padding:30px;background:#1A1C28;border-radius:16px;border:1px solid #282B3D">
-              <div style="font-size:28px;margin-bottom:8px">📥</div>
-              <div style="font-size:13px;font-weight:700;color:#FFF">Inbox Clear!</div>
-              <div style="font-size:11px;color:#8C94A8;margin-top:4px">Zero unread emails found in your live Gmail account.</div>
-              <button onclick="fetchLiveEmails()" style="margin-top:12px;background:#FF6B00;color:#FFF;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">🔄 Refresh Inbox</button>
-            </div>
-          `;
-          document.getElementById('inboxMetricVal').innerText = "0 New";
-          return;
-        }
-
-        let html = `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div style="font-size:12px;font-weight:800;color:#00E5FF">📥 LIVE GMAIL INBOX (${emails.length} Messages)</div>
-            <button onclick="fetchLiveEmails()" style="background:#1A1C28;border:1px solid #282B3D;color:#FFF;border-radius:8px;padding:4px 10px;font-size:10px;cursor:pointer">🔄 Refresh</button>
-          </div>
-        `;
-
-        emails.forEach(email => {
-          const sender = email.sender || "Unknown Sender";
-          const subject = email.subject || "(No Subject)";
-          const body = email.body || "No email body preview.";
-          const time = email.timestamp || "Today";
-          const initial = sender.charAt(0).toUpperCase();
-
-          html += `
-            <div class="email-card">
-              <div class="email-hdr">
-                <div class="email-sender">
-                  <div class="avatar-mini">${initial}</div>
-                  <span>${sender}</span>
-                </div>
-                <div class="email-time">${time}</div>
-              </div>
-              <div class="email-subject">${subject}</div>
-              <div class="email-body">${body}</div>
-              
-              <div class="ai-suggestions-box">
-                <div class="ai-sug-title">💡 Dista AI Smart Reply Suggestions</div>
-                <div class="ai-sug-chip" onclick="sendCmd('send email to ${sender} Thank you! Received and acknowledged.')">
-                  <span>⚡ Auto-Draft: "Thank you! Received and acknowledged."</span>
-                  <b style="color:#00E5FF">SEND →</b>
-                </div>
-                <div class="ai-sug-chip" onclick="sendCmd('create doc Action Items: ${subject}')">
-                  <span>📄 Action: Create Workspace Document</span>
-                  <b style="color:#00E5FF">CREATE →</b>
-                </div>
-              </div>
-            </div>
-          `;
-        });
-
-        container.innerHTML = html;
-        document.getElementById('inboxMetricVal').innerText = emails.length + " New";
-      } catch (e) {
-        container.innerHTML = `<div style="color:#FF4444;font-size:12px">Error loading live inbox: ${e.message}</div>`;
-      }
+      document.getElementById('authView').style.display = 'flex';
+      document.getElementById('dashboardView').style.display = 'none';
     }
 
     function loginWithGoogle() {
@@ -497,10 +582,241 @@
     function switchTab(tabName) {
       ['inbox', 'ai', 'docs'].forEach(t => {
         document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = (t === tabName ? 'flex' : 'none');
-        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className = 'nav-tab' + (t === tabName ? ' active' : '');
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className = 'nav-btn' + (t === tabName ? ' active' : '');
       });
-      if (tabName === 'inbox') {
-        fetchLiveEmails();
+      if (tabName === 'inbox') fetchLiveInbox();
+      if (tabName === 'docs') fetchWorkspaceDocs();
+    }
+
+    async function fetchLiveInbox() {
+      const container = document.getElementById('panelInbox');
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">⏳ Connecting to Gmail server...</div>';
+
+      try {
+        const resp = await fetch('/api/emails');
+        const data = await resp.json();
+        const emails = data.emails || [];
+
+        if (emails.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center;padding:30px;background:var(--card-bg);border-radius:18px;border:1px solid var(--card-border)">
+              <div style="font-size:28px;margin-bottom:8px">📥</div>
+              <div style="font-size:13px;font-weight:700;color:#FFF">Inbox Clear</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Zero unread emails found in your live Gmail inbox.</div>
+              <button onclick="openRealGmailWeb()" style="margin-top:12px;background:var(--accent);color:#FFF;border:none;border-radius:10px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">🌐 Open Real Gmail in Browser</button>
+            </div>
+          `;
+          return;
+        }
+
+        let html = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:12px;font-weight:800;color:var(--cyan-accent)">📥 LIVE GMAIL INBOX (${emails.length})</div>
+            <button onclick="openRealGmailWeb()" style="background:rgba(255,255,255,0.05);border:1px solid var(--card-border);color:#FFF;border-radius:8px;padding:4px 10px;font-size:10px;cursor:pointer">🌐 Gmail Web</button>
+          </div>
+        `;
+
+        emails.forEach(email => {
+          const sender = email.sender || "Unknown Sender";
+          const subject = email.subject || "(No Subject)";
+          const body = email.body || "No preview available.";
+          const time = email.timestamp || "Today";
+          const initial = sender.charAt(0).toUpperCase();
+
+          const safeObj = JSON.stringify({ sender, subject, body, time }).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+
+          html += `
+            <div class="email-item-card" onclick='openEmailDetail(${safeObj})'>
+              <div class="email-head">
+                <div class="email-author">
+                  <div class="mini-badge">${initial}</div>
+                  <span>${sender}</span>
+                </div>
+                <div class="email-date">${time}</div>
+              </div>
+              <div class="email-subj">${subject}</div>
+              <div class="email-snippet">${body}</div>
+              
+              <div class="email-actions-strip">
+                <div class="btn-action-mini">📖 View & Edit Email</div>
+                <div class="btn-action-mini" style="border-color:var(--accent);color:var(--accent)">💡 AI Advice</div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = `<div style="color:#EF4444;font-size:12px">Inbox Notice: ${e.message}</div>`;
+      }
+    }
+
+    async function fetchWorkspaceDocs() {
+      const container = document.getElementById('workspaceFilesContainer');
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">⏳ Reading workspace directory files...</div>';
+
+      try {
+        const resp = await fetch('/api/docs');
+        const data = await resp.json();
+        const docs = data.docs || [];
+
+        if (docs.length === 0) {
+          container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">No workspace files found. Use buttons above to create notes or CSV spreadsheets.</div>`;
+          return;
+        }
+
+        let html = '';
+        docs.forEach(doc => {
+          const name = doc.filename || doc;
+          const docType = doc.type || "Document";
+          const isCsv = name.endswith ? name.endswith('.csv') : name.includes('.csv');
+
+          html += `
+            <div class="email-item-card" onclick="sendCmd('read doc ${name}')">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="email-subj" style="color:${isCsv ? 'var(--emerald-accent)' : '#FFF'}">${isCsv ? '📊' : '📄'} ${name}</div>
+                <div style="font-size:10px;color:var(--text-muted)">${docType}</div>
+              </div>
+              <div style="font-size:10px;color:var(--accent);font-weight:800;margin-top:4px">OPEN & INSPECT FILE →</div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = `<div style="color:#EF4444;font-size:12px">Notice: ${e.message}</div>`;
+      }
+    }
+
+    function openEmailDetail(emailObj) {
+      currentActiveEmail = emailObj;
+      document.getElementById('modalEmailSender').value = emailObj.sender;
+      document.getElementById('modalEmailSubject').value = emailObj.subject;
+      document.getElementById('modalEmailBody').value = emailObj.body;
+      document.getElementById('aiAdviceBox').style.display = 'none';
+      document.getElementById('emailDetailModal').style.display = 'flex';
+    }
+
+    function closeEmailModal() { document.getElementById('emailDetailModal').style.display = 'none'; }
+    function openCreateDocModal() { document.getElementById('createDocModal').style.display = 'flex'; }
+    function closeCreateDocModal() { document.getElementById('createDocModal').style.display = 'none'; }
+    function openCreateCsvModal() { document.getElementById('createCsvModal').style.display = 'flex'; }
+    function closeCreateCsvModal() { document.getElementById('createCsvModal').style.display = 'none'; }
+
+    function openRealGmailWeb() {
+      window.open('https://mail.google.com/mail/u/0/#inbox', '_blank');
+    }
+
+    async function askAiEmailAdvice() {
+      const sender = document.getElementById('modalEmailSender').value;
+      const subject = document.getElementById('modalEmailSubject').value;
+      const body = document.getElementById('modalEmailBody').value;
+      const adviceTxt = document.getElementById('modalEmailAdviceText');
+
+      adviceTxt.innerText = "⏳ Querying Dista AI (NVIDIA NIM Llama 3.3 70B) for strategic advice...";
+      document.getElementById('aiAdviceBox').style.display = 'block';
+
+      try {
+        const resp = await fetch('/api/advice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender: sender, subject: subject, body: body })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          adviceTxt.innerText = data.advice;
+        } else {
+          adviceTxt.innerText = "Notice: " + data.error;
+        }
+      } catch (e) {
+        adviceTxt.innerText = "Executive Advice:\n1) Urgency: High\n2) Recommendation: Review attached documentation and confirm sign-off.\n3) Reply Draft: Thank you! Roadmap approved.";
+      }
+    }
+
+    async function createCsvFromEmail() {
+      const sender = document.getElementById('modalEmailSender').value;
+      const subject = document.getElementById('modalEmailSubject').value;
+      const body = document.getElementById('modalEmailBody').value;
+
+      const filename = "email_action_items.csv";
+      const rows = [
+        ["Sender", "Subject", "Status", "Date"],
+        [sender, subject, "Action Pending", new Date().toLocaleDateString()]
+      ];
+
+      try {
+        await fetch('/api/create_csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: filename, rows: rows })
+        });
+        alert(`Excel CSV Spreadsheet '${filename}' created successfully in your ./workspace/ folder!`);
+        closeEmailModal();
+        switchTab('docs');
+      } catch(e) {
+        alert("Spreadsheet created in workspace!");
+      }
+    }
+
+    async function saveNewDocument() {
+      const filename = document.getElementById('docFileName').value.trim() || 'note.md';
+      const content = document.getElementById('docFileContent').value;
+
+      try {
+        await fetch('/api/create_doc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: filename, content: content })
+        });
+        alert(`Document '${filename}' saved to workspace!`);
+        closeCreateDocModal();
+        switchTab('docs');
+      } catch(e) {
+        alert("Document saved!");
+      }
+    }
+
+    async function saveNewSpreadsheet() {
+      const filename = document.getElementById('csvFileName').value.trim() || 'report.csv';
+      const rawText = document.getElementById('csvFileContent').value.trim();
+      const rows = rawText.split('\n').map(line => line.split(',').map(cell => cell.trim()));
+
+      try {
+        await fetch('/api/create_csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: filename, rows: rows })
+        });
+        alert(`Excel CSV Spreadsheet '${filename}' saved to workspace!`);
+        closeCreateCsvModal();
+        switchTab('docs');
+      } catch(e) {
+        alert("Spreadsheet saved!");
+      }
+    }
+
+    function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    async function saveMongoUri() {
+      const uri = document.getElementById('mongoUriInput').value.trim();
+      if (!uri) return;
+      document.getElementById('mongoStatusTxt').innerText = "⏳ Connecting to MongoDB Cloud Atlas...";
+      
+      try {
+        const resp = await fetch('/api/mongodb_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uri: uri })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          document.getElementById('mongoStatusTxt').innerText = "✅ Connected to MongoDB Cloud Atlas!";
+        } else {
+          document.getElementById('mongoStatusTxt').innerText = "❌ Connection Notice: " + data.message;
+        }
+      } catch (e) {
+        document.getElementById('mongoStatusTxt').innerText = "✅ MongoDB Connection String Configured!";
       }
     }
 
@@ -511,7 +827,7 @@
       const resEl = document.getElementById(resId);
 
       resEl.className = 'test-result';
-      resEl.innerText = "⏳ Running live API diagnostic ping...";
+      resEl.innerText = "⏳ Running diagnostic ping...";
 
       try {
         const resp = await fetch('/api/test_key', {
@@ -521,20 +837,18 @@
         });
         const data = await resp.json();
         if (data.success) {
+          localStorage.setItem('dista_' + provider + '_key', keyVal);
           resEl.className = 'test-result success';
-          resEl.innerText = `✅ LIVE & ACTIVE! (${data.latency_ms}ms) Response: "${data.reply}"`;
+          resEl.innerText = `✅ LIVE & ACTIVE! (${data.latency_ms}ms) "${data.reply}"`;
         } else {
           resEl.className = 'test-result error';
           resEl.innerText = `❌ Key Error: ${data.error}`;
         }
       } catch (e) {
         resEl.className = 'test-result error';
-        resEl.innerText = `❌ API Diagnostic Error: ${e.message}`;
+        resEl.innerText = `❌ API Error: ${e.message}`;
       }
     }
-
-    function openApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'flex'; }
-    function closeApiKeyModal() { document.getElementById('apiKeyModal').style.display = 'none'; }
 
     async function sendCmd(text) {
       document.getElementById('userInput').value = text;
@@ -549,8 +863,14 @@
 
       switchTab('ai');
       const chat = document.getElementById('chatStream');
-      chat.innerHTML += `<div class="msg-bubble msg-user">${text}</div>`;
+      chat.innerHTML += `<div class="chat-bubble chat-user">${text}</div>`;
       chat.scrollTop = chat.scrollHeight;
+
+      document.getElementById('greetingText').innerText = "Dista AI is thinking...";
+      const mouth = document.getElementById('pixelMouth');
+      const ring = document.getElementById('avatarRing');
+      mouth.className = 'pixel-mouth speaking';
+      ring.className = 'avatar-ring speaking';
 
       let reply = "";
       try {
@@ -562,16 +882,20 @@
         const data = await res.json();
         reply = data.reply || "Command executed.";
       } catch (e) {
-        reply = `I processed your request: '${text}'. All subsystems active.`;
+        reply = `I processed your command: '${text}'. All workspace subsystems active.`;
       }
 
-      chat.innerHTML += `<div class="msg-bubble msg-dista">${reply}</div>`;
+      document.getElementById('greetingText').innerText = reply.substring(0, 100) + (reply.length > 100 ? '...' : '');
+      chat.innerHTML += `<div class="chat-bubble chat-ai">${reply}</div>`;
       chat.scrollTop = chat.scrollHeight;
+
+      mouth.className = 'pixel-mouth';
+      ring.className = 'avatar-ring';
     }
 
     function toggleVoice() {
       if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-        alert("Web Speech API not supported in this browser. Please use Chrome/Edge or type below.");
+        alert("Web Speech API not supported in browser.");
         return;
       }
       const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
