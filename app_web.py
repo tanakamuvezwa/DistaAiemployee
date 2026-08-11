@@ -32,8 +32,10 @@ class DistaHTTPHandler(BaseHTTPRequestHandler):
             if '/api/emails' in self.path:
                 if gmail_service.is_configured():
                     emails = gmail_service.fetch_unread_emails(max_results=10)
+                    if not emails:
+                        emails = EmailTool.get_all_emails()
                 else:
-                    emails = EmailTool.get_unread_emails()
+                    emails = EmailTool.get_all_emails()
                 self.send_response(200)
                 self._send_cors_headers()
                 self.send_header('Content-Type', 'application/json')

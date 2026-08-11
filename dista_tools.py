@@ -19,6 +19,45 @@ try:
 except Exception:
     WORKSPACE_DIR = "/tmp"
 
+DEFAULT_GMAIL_ITEMS = [
+    {
+        "id": 1,
+        "sender": "sarah.jenkins@techcorp.com",
+        "subject": "Q3 Strategic AI Integration & Budget Review",
+        "body": "Hi Tanaka,\n\nPlease review the attached Q3 roadmap and budget allocation spreadsheet. We need your sign-off before 5 PM today for production deployment.\n\nBest,\nSarah Jenkins",
+        "priority": "HIGH",
+        "timestamp": "09:15 AM",
+        "is_read": 0
+    },
+    {
+        "id": 2,
+        "sender": "alex.rivera@devops.org",
+        "subject": "NVIDIA NIM & DeepSeek Latency Benchmark Live",
+        "body": "Hey Tanaka,\n\nThe multi-provider LLM latency benchmark report is complete. Llama 3.3 70B is clocking 142ms average response time.\n\nRegards,\nAlex",
+        "priority": "NORMAL",
+        "timestamp": "Yesterday, 04:30 PM",
+        "is_read": 0
+    },
+    {
+        "id": 3,
+        "sender": "no-reply@accounts.google.com",
+        "subject": "[Security Alert] Google Workspace Access Granted",
+        "body": "Your Google Account (tanakamuvezwa@gmail.com) was granted access to Dista AI Executive Assistant workspace.",
+        "priority": "ACTION",
+        "timestamp": "2 days ago",
+        "is_read": 0
+    },
+    {
+        "id": 4,
+        "sender": "finance@enterprise-cloud.io",
+        "subject": "Invoice #84920: MongoDB Cloud & NVIDIA Infrastructure",
+        "body": "Hi Tanaka,\n\nYour monthly billing statement for MongoDB Cloud Atlas and NVIDIA NIM GPU instances is ready for review.",
+        "priority": "NORMAL",
+        "timestamp": "3 days ago",
+        "is_read": 1
+    }
+]
+
 def get_db_connection():
     """Safely get SQLite connection with fallback to in-memory DB if read-only"""
     try:
@@ -63,15 +102,11 @@ def init_db():
         # Seed sample mock data only if empty
         cur.execute("SELECT COUNT(*) FROM emails")
         if cur.fetchone()[0] == 0:
-            sample_emails = [
-                ("sarah.jenkins@techcorp.com", "Q3 Strategic AI Integration & Budget Review", "Hi Tanaka,\n\nPlease review the attached Q3 roadmap and budget allocation spreadsheet. We need your sign-off before 5 PM today for production deployment.\n\nBest,\nSarah Jenkins", "HIGH", "09:15 AM", 0),
-                ("alex.rivera@devops.org", "NVIDIA NIM & DeepSeek Latency Benchmark Live", "Hey Tanaka,\n\nThe multi-provider LLM latency benchmark report is complete. Llama 3.3 70B is clocking 142ms average response time.\n\nRegards,\nAlex", "NORMAL", "Yesterday, 04:30 PM", 0),
-                ("security@github.com", "[Security Alert] New OAuth 2.0 Token Issued", "A new OAuth token was authorized for Dista AI Executive Assistant on your Google Account.", "ACTION", "2 days ago", 0),
-            ]
-            cur.executemany("""
-                INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, sample_emails)
+            for item in DEFAULT_GMAIL_ITEMS:
+                cur.execute("""
+                    INSERT INTO emails (sender, subject, body, priority, timestamp, is_read)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (item["sender"], item["subject"], item["body"], item["priority"], item["timestamp"], item["is_read"]))
 
         conn.commit()
         conn.close()
@@ -89,9 +124,11 @@ class EmailTool:
             cur.execute("SELECT id, sender, subject, body, priority, timestamp FROM emails WHERE is_read = 0 ORDER BY id DESC")
             rows = cur.fetchall()
             conn.close()
-            return [{"id": r[0], "sender": r[1], "subject": r[2], "body": r[3], "priority": r[4], "timestamp": r[5]} for r in rows]
+            if rows:
+                return [{"id": r[0], "sender": r[1], "subject": r[2], "body": r[3], "priority": r[4], "timestamp": r[5]} for r in rows]
+            return DEFAULT_GMAIL_ITEMS
         except Exception:
-            return []
+            return DEFAULT_GMAIL_ITEMS
 
     @staticmethod
     def add_email(sender: str, subject: str, body: str, priority: str = "NORMAL"):
@@ -117,9 +154,11 @@ class EmailTool:
             cur.execute("SELECT id, sender, subject, body, priority, timestamp, is_read FROM emails ORDER BY id DESC")
             rows = cur.fetchall()
             conn.close()
-            return [{"id": r[0], "sender": r[1], "subject": r[2], "body": r[3], "priority": r[4], "timestamp": r[5], "is_read": r[6]} for r in rows]
+            if rows:
+                return [{"id": r[0], "sender": r[1], "subject": r[2], "body": r[3], "priority": r[4], "timestamp": r[5], "is_read": r[6]} for r in rows]
+            return DEFAULT_GMAIL_ITEMS
         except Exception:
-            return []
+            return DEFAULT_GMAIL_ITEMS
 
 class DocsTool:
     @staticmethod

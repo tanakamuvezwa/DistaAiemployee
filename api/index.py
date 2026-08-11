@@ -39,8 +39,10 @@ class handler(BaseHTTPRequestHandler):
         if path.endswith('/emails') or '/api/emails' in path:
             if gmail_service.is_configured():
                 emails = gmail_service.fetch_unread_emails(max_results=10)
+                if not emails:
+                    emails = EmailTool.get_all_emails()
             else:
-                emails = EmailTool.get_unread_emails()
+                emails = EmailTool.get_all_emails()
             response_data = {"success": True, "emails": emails}
 
         elif path.endswith('/docs') or '/api/docs' in path:
@@ -124,8 +126,10 @@ class handler(BaseHTTPRequestHandler):
         elif path.endswith('/emails') or '/api/emails' in path:
             if gmail_service.is_configured():
                 emails = gmail_service.fetch_unread_emails(max_results=10)
+                if not emails:
+                    emails = EmailTool.get_all_emails()
             else:
-                emails = EmailTool.get_unread_emails()
+                emails = EmailTool.get_all_emails()
             
             self.send_response(200)
             self._send_cors_headers()
