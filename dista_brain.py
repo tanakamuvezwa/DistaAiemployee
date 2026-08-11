@@ -33,8 +33,7 @@ except ImportError:
 class DistaBrain:
     """
     Enterprise Multi-Provider AI Engine.
-    Powered by NVIDIA NIM (Llama 3.3 70B), OpenRouter, Gemini, and DeepSeek.
-    Includes Unicode Safety & Multi-Provider Resilience.
+    Powered by NVIDIA NIM (Llama 3.3 70B), China AI (Qwen, Kimi, DeepSeek, Zhipu GLM), OpenRouter, and Gemini.
     """
 
     def __init__(self):
@@ -43,12 +42,14 @@ class DistaBrain:
         
         self.api_keys = {
             "nvidia": os.environ.get("NVIDIA_API_KEY", DEFAULT_NVIDIA_KEY),
-            "openrouter": os.environ.get("OPENROUTER_API_KEY", ""),
+            "qwen": os.environ.get("QWEN_API_KEY", ""),
             "kimi": os.environ.get("KIMI_API_KEY", ""),
+            "deepseek": os.environ.get("DEEPSEEK_API_KEY", ""),
+            "zhipu": os.environ.get("ZHIPU_API_KEY", ""),
+            "openrouter": os.environ.get("OPENROUTER_API_KEY", ""),
             "openai": os.environ.get("OPENAI_API_KEY", "sk-HQ9ebkG6taky3plquC4ToNCRXSr5Z4oR6zjF73f8HAiqO7wX"),
             "gemini": os.environ.get("GEMINI_API_KEY", ""),
             "claude": os.environ.get("CLAUDE_API_KEY", ""),
-            "deepseek": os.environ.get("DEEPSEEK_API_KEY", ""),
             "groq": os.environ.get("GROQ_API_KEY", "")
         }
 
@@ -59,7 +60,7 @@ class DistaBrain:
         os.environ[env_var] = key.strip()
 
     def get_email_advice(self, sender: str, subject: str, body: str) -> str:
-        """Generates executive email summary & advice without raw unicode console crashes"""
+        """Generates executive email summary & advice"""
         prompt = (
             f"Analyze this incoming message from {sender}:\n"
             f"Subject: {subject}\n"
@@ -93,6 +94,50 @@ class DistaBrain:
                         reply = data["choices"][0]["message"]["content"].strip()
                         latency = int((time.time() - start_t) * 1000)
                         return {"success": True, "provider": "NVIDIA NIM (Llama 3.3 70B)", "reply": reply, "latency_ms": latency}
+
+                elif prov == "qwen" or prov == "dashscope":
+                    url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                    payload = {"model": "qwen-turbo", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
+                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                    with urllib.request.urlopen(req, timeout=4) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        reply = data["choices"][0]["message"]["content"].strip()
+                        latency = int((time.time() - start_t) * 1000)
+                        return {"success": True, "provider": "Alibaba Qwen (DashScope)", "reply": reply, "latency_ms": latency}
+
+                elif prov == "kimi":
+                    url = "https://api.moonshot.cn/v1/chat/completions"
+                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                    payload = {"model": "moonshot-v1-8k", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
+                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                    with urllib.request.urlopen(req, timeout=4) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        reply = data["choices"][0]["message"]["content"].strip()
+                        latency = int((time.time() - start_t) * 1000)
+                        return {"success": True, "provider": "Kimi AI / Moonshot", "reply": reply, "latency_ms": latency}
+
+                elif prov == "deepseek":
+                    url = "https://api.deepseek.com/v1/chat/completions"
+                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                    payload = {"model": "deepseek-chat", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
+                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                    with urllib.request.urlopen(req, timeout=4) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        reply = data["choices"][0]["message"]["content"].strip()
+                        latency = int((time.time() - start_t) * 1000)
+                        return {"success": True, "provider": "DeepSeek AI", "reply": reply, "latency_ms": latency}
+
+                elif prov == "zhipu":
+                    url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
+                    payload = {"model": "glm-4", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
+                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+                    with urllib.request.urlopen(req, timeout=4) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        reply = data["choices"][0]["message"]["content"].strip()
+                        latency = int((time.time() - start_t) * 1000)
+                        return {"success": True, "provider": "Zhipu GLM-4 AI", "reply": reply, "latency_ms": latency}
 
                 elif prov == "openrouter":
                     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -138,28 +183,6 @@ class DistaBrain:
                         latency = int((time.time() - start_t) * 1000)
                         return {"success": True, "provider": "Google Gemini 2.0", "reply": reply, "latency_ms": latency}
 
-                elif prov == "kimi":
-                    url = "https://api.moonshot.cn/v1/chat/completions"
-                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
-                    payload = {"model": "moonshot-v1-8k", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
-                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-                    with urllib.request.urlopen(req, timeout=4) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                        reply = data["choices"][0]["message"]["content"].strip()
-                        latency = int((time.time() - start_t) * 1000)
-                        return {"success": True, "provider": "Kimi AI / Moonshot", "reply": reply, "latency_ms": latency}
-
-                elif prov == "deepseek":
-                    url = "https://api.deepseek.com/v1/chat/completions"
-                    headers = {"Authorization": f"Bearer {test_key}", "Content-Type": "application/json"}
-                    payload = {"model": "deepseek-chat", "messages": [{"role": "user", "content": query}], "max_tokens": 5}
-                    req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
-                    with urllib.request.urlopen(req, timeout=4) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                        reply = data["choices"][0]["message"]["content"].strip()
-                        latency = int((time.time() - start_t) * 1000)
-                        return {"success": True, "provider": "DeepSeek AI", "reply": reply, "latency_ms": latency}
-
             except urllib.error.HTTPError as e:
                 if e.code == 429:
                     return {"success": True, "provider": prov.upper(), "reply": "Key Verified Active! (Rate limit 429 reached, key is valid).", "latency_ms": 150}
@@ -197,23 +220,22 @@ class DistaBrain:
             print(f"[NVIDIA NIM Notice]: {e}")
             return ""
 
-    def _call_openrouter(self, query: str, sys_msg: str) -> str:
-        key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
+    def _call_qwen(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("qwen") or os.environ.get("QWEN_API_KEY")
         if not key: return ""
         try:
-            url = "https://openrouter.ai/api/v1/chat/completions"
+            url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
             headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
             payload = {
-                "model": "openrouter/auto",
-                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
-                "max_tokens": 512
+                "model": "qwen-turbo",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
             }
             req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
             with urllib.request.urlopen(req, timeout=6) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
-            print(f"[OpenRouter Notice]: {e}")
+            print(f"[Alibaba Qwen Notice]: {e}")
             return ""
 
     def _call_kimi(self, query: str, sys_msg: str) -> str:
@@ -251,6 +273,43 @@ class DistaBrain:
                 return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
             print(f"[DeepSeek Notice]: {e}")
+            return ""
+
+    def _call_zhipu(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("zhipu") or os.environ.get("ZHIPU_API_KEY")
+        if not key: return ""
+        try:
+            url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "glm-4",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}]
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[Zhipu GLM Notice]: {e}")
+            return ""
+
+    def _call_openrouter(self, query: str, sys_msg: str) -> str:
+        key = self.api_keys.get("openrouter") or os.environ.get("OPENROUTER_API_KEY")
+        if not key: return ""
+        try:
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "openrouter/auto",
+                "messages": [{"role": "system", "content": sys_msg}, {"role": "user", "content": query}],
+                "max_tokens": 512
+            }
+            req = urllib.request.Request(url, headers=headers, data=json.dumps(payload).encode("utf-8"))
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            print(f"[OpenRouter Notice]: {e}")
             return ""
 
     def _call_groq(self, query: str, sys_msg: str) -> str:
@@ -324,7 +383,7 @@ class DistaBrain:
 
     def _call_ai_engine(self, user_query: str, system_prompt: str = "") -> str:
         sys_msg = system_prompt or (
-            "You are Dista AI, an executive workspace assistant powered by NVIDIA NIM Llama 3.3. "
+            "You are Dista AI, an executive workspace assistant powered by NVIDIA NIM Llama 3.3 and China AI LLMs. "
             "Provide helpful, intelligent, sharp, and concise conversational responses. "
             "Keep formatting clean and readable."
         )
@@ -336,18 +395,24 @@ class DistaBrain:
             res = self._call_nvidia(user_query, sys_msg)
             if res: return res
 
-        if provider == "kimi":
+        if provider == "qwen" or provider == "china":
+            res = self._call_qwen(user_query, sys_msg)
+            if res: return f"[Alibaba Qwen] {res}"
+        elif provider == "kimi":
             res = self._call_kimi(user_query, sys_msg)
             if res: return f"[Kimi AI] {res}"
+        elif provider == "deepseek":
+            res = self._call_deepseek(user_query, sys_msg)
+            if res: return f"[DeepSeek AI] {res}"
+        elif provider == "zhipu":
+            res = self._call_zhipu(user_query, sys_msg)
+            if res: return f"[Zhipu GLM] {res}"
         elif provider == "openai":
             res = self._call_openai(user_query, sys_msg)
             if res: return f"[OpenAI GPT-4o] {res}"
         elif provider == "gemini":
             res = self._call_gemini(user_query, sys_msg)
             if res: return f"[Google Gemini] {res}"
-        elif provider == "deepseek":
-            res = self._call_deepseek(user_query, sys_msg)
-            if res: return f"[DeepSeek AI] {res}"
         elif provider == "groq":
             res = self._call_groq(user_query, sys_msg)
             if res: return f"[Groq AI] {res}"
@@ -355,14 +420,16 @@ class DistaBrain:
             res = self._call_openrouter(user_query, sys_msg)
             if res: return f"[OpenRouter] {res}"
 
-        # 2. Cascade Fallback Engine
+        # 2. Cascade Fallback Engine including China AI Models
         for call_fn, label in [
             (lambda: self._call_nvidia(user_query, sys_msg), "NVIDIA NIM"),
+            (lambda: self._call_qwen(user_query, sys_msg), "Alibaba Qwen"),
+            (lambda: self._call_deepseek(user_query, sys_msg), "DeepSeek"),
+            (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
+            (lambda: self._call_zhipu(user_query, sys_msg), "Zhipu GLM"),
             (lambda: self._call_openrouter(user_query, sys_msg), "OpenRouter"),
             (lambda: self._call_gemini(user_query, sys_msg), "Gemini"),
-            (lambda: self._call_kimi(user_query, sys_msg), "Kimi AI"),
             (lambda: self._call_openai(user_query, sys_msg), "OpenAI"),
-            (lambda: self._call_deepseek(user_query, sys_msg), "DeepSeek"),
             (lambda: self._call_groq(user_query, sys_msg), "Groq"),
             (lambda: self._call_g4f(user_query, sys_msg), "Free AI Engine")
         ]:
@@ -429,9 +496,9 @@ class DistaBrain:
             if psutil:
                 cpu_v = psutil.cpu_percent(interval=0.1)
                 mem_v = psutil.virtual_memory().percent
-                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3). All systems nominal."
+                reply = f"System Diagnostic: OS {platform.system()} {platform.release()} | CPU Load: {cpu_v}% | RAM: {mem_v}% | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3 / China AI). All systems nominal."
             else:
-                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3). Engine nominal."
+                reply = f"System Diagnostic: OS {platform.system()} | Storage: {db_type} | AI Provider: {self.active_provider.upper()} (NVIDIA NIM Llama 3.3 / China AI). Engine nominal."
             return {"reply": reply, "action": "show_system", "data": None}
 
         # ── 5. MATH & CALCULATOR ───────────────────────────────────────
